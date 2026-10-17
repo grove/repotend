@@ -1,6 +1,6 @@
 # v0.1.0 release checklist (pre-release)
 
-This is an **acceptance checklist**, not a claim that v0.1.0 has been released. The release itself belongs in a separate reviewable release PR. Do not create a tag or GitHub Release until the checklist is satisfied.
+This is the acceptance checklist for the **v0.1.0 release candidate**, not a claim that a release has been published. Evidence and remaining post-merge operations are recorded in [release acceptance](RELEASE_ACCEPTANCE.md). Do not tag or publish until the reviewed release PR is merged and its CI passes.
 
 ## Product readiness
 
@@ -18,6 +18,7 @@ npm ci --ignore-scripts --no-audit --no-fund
 npm run format:check
 npm run lint
 npm test
+npm run release:check  # read-only pre-tag validation
 npm run audit
 npm run remediate   # read-only preview
 npm run validate:external  # requires GitHub network access
@@ -31,11 +32,11 @@ npm run validate:external  # requires GitHub network access
 
 ## Release material
 
-- [ ] Update README status from *experimental / pre-v0.1* only after final acceptance.
-- [ ] Confirm `package.json` and audit `toolVersion` reflect the intended tag, not `0.1.0-dev`.
-- [ ] Add a release changelog entry including supported host/platform limitations, major rules, report semantics, and upgrade notes.
-- [ ] Confirm the versioned JSON Schema `$id` URLs resolve after tagging.
-- [ ] Tag `v0.1.0` and publish release notes only after reviewed CI and acceptance.
+- [ ] Confirm README accurately describes the release candidate and its experimental limitations; mark publication only after the tag and GitHub Release exist.
+- [x] Set `package.json`, package-lock root versions, and audit `toolVersion` to `0.1.0`; the read-only pre-tag script verifies alignment.
+- [x] Add a v0.1.0 candidate changelog entry and [release notes](RELEASE_NOTES_V0.1.0.md) documenting host/platform limitations, rules, report semantics, and upgrades.
+- [ ] After tagging, confirm the versioned JSON Schema `$id` URLs resolve. The pre-tag gate only checks their intended targets.
+- [ ] Tag `v0.1.0` on the reviewed merge commit and publish GitHub Release only after PR CI, clean-install acceptance, and owner approval.
 - [ ] Record what remains post-v0.1: test-pyramid analysis, deeper CI dependency/cost analysis, language-specific rules, package distribution, additional agent hosts, and API-based GitHub settings checks.
 
 **Do not mistake an advisory PASS for certification.** Post-release feedback should prioritize actionable, low-false-positive findings over adding broad scoring features.

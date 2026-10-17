@@ -207,7 +207,7 @@ export async function runAudit(repositoryRoot = process.cwd(), selected: readonl
         confidence: 'verified', summary: 'Rule could not complete', evidence: [], recommendation: null, enforced: false });
     }
   }
-  return { schemaVersion: '0.1', toolVersion: '0.1.0-dev', repository: { path: '.' }, mode: 'audit', profile: config.profile, findings, errors };
+  return { schemaVersion: '0.1', toolVersion: '0.1.0', repository: { path: '.' }, mode: 'audit', profile: config.profile, findings, errors };
 }
 
 function safeTable(value: string): string { return value.replaceAll('|', '\\|').replace(/[\r\n]/g, ' '); }

@@ -4,7 +4,7 @@
 
 RepoTend is an open-source, AI-assisted toolkit for maintaining healthy **small GitHub repositories**. It helps maintainers audit engineering practices, understand actionable findings, and make safe, reviewable improvements—without introducing enterprise-scale process.
 
-> **Project status: experimental / pre-v0.1.** A reusable TypeScript rule registry, read-only audit script, and portable Agent Skill live in this repository. They cover thirteen focused checks, **not** the planned v0.1 feature set. The capabilities below describe the broader intended first release.
+> **Project status: experimental (v0.1 series).** The current code provides thirteen focused checks, a portable Copilot-compatible Agent Skill, advisory reporting, and two approval-gated fixes. This is an initial release, not a comprehensive repository-security scanner.
 
 ## Why RepoTend?
 
@@ -12,9 +12,9 @@ Maintainers often know what a well-run repository should have—clear contributi
 
 RepoTend aims to provide a practical starting point and a light-touch maintenance assistant. It should be useful to a solo maintainer without requiring a service, dashboard, or extensive configuration.
 
-## What it will do
+## What it does
 
-The first release is planned around four small, broadly applicable areas:
+The initial v0.1 implementation focuses on four broadly applicable areas:
 
 | Area | Example checks and guidance |
 | --- | --- |
@@ -23,9 +23,9 @@ The first release is planned around four small, broadly applicable areas:
 | Basic security | Least-privilege workflow tokens and dangerous workflow patterns, integrating existing tools where useful |
 | Developer experience | Onboarding clarity, consistent formatting configuration, and discoverable build/test instructions |
 
-RepoTend's planned workflow is **audit → explain → propose → fix → verify**. Deterministic scripts will provide reproducible findings; an AI skill will help interpret context and prepare changes. No AI model is required to run the checks.
+RepoTend supports **audit → explain → propose → fix → verify** for its initial narrow remediation scope. Deterministic scripts produce reproducible findings, while the Agent Skill helps interpret evidence and request approvals. No AI model is required to run the checks.
 
-### Experimental self-audit (available now)
+### Self-audit
 
 Node.js **22.16+** is required for built-in TypeScript stripping. Install the pinned dependencies before running audits:
 
@@ -40,7 +40,7 @@ node skills/repotend/scripts/audit.mjs --format json
 
 For a different repository, pass `--root /path/to/repository`. [Installation instructions](docs/INSTALLATION.md) cover a separate consumer checkout and local Agent Skill setup. The skill lives at [skills/repotend/SKILL.md](skills/repotend/SKILL.md). See [dogfooding policy and limitations](docs/DOGFOODING.md). The default `small-oss` profile is advisory. The optional [`.repotend.yml` configuration](docs/CONFIGURATION.md) can disable checks, enforce objective rules, or document exceptions with a reason and optional expiry. Suppressed findings remain visible rather than becoming PASS. See the [configuration guide](docs/CONFIGURATION.md) for supported syntax, statuses, and exit codes. The workflow checks now use a YAML 1.2 parser and include static CI efficiency and security recommendations, but this remains a limited audit, not a complete GitHub Actions semantic validator or security scanner.
 
-### Experimental safe remediation (available now)
+### Safe remediation
 
 RepoTend can preview two small, fixed-content additions: a missing PR template and a minimal EditorConfig. By default, preview is read-only and shows a diff. Applying requires a **reviewed plan ID** and explicit approval; no existing files are overwritten.
 
@@ -51,7 +51,7 @@ node skills/repotend/scripts/remediate.mjs --root /path/to/project --format json
 
 See [reviewable remediation and safety](docs/REMEDIATION.md) for the separate apply command and limitations. [Agent validation](docs/AGENT_VALIDATION.md) records live Copilot CLI discovery, preview, denial, human-approved apply, and verification separately from script-level tests.
 
-### Install the experimental Copilot CLI skill
+### Install the Copilot CLI skill
 
 From a separate RepoTend checkout, install a complete copy with pinned runtime dependencies:
 
@@ -78,14 +78,14 @@ The installation includes scripts, documentation, and dependencies; it works wit
 
 ## Scope and roadmap
 
-**Planned for v0.1**
+**Implemented in the v0.1 codebase**
 
-- A portable Agent Skill and a small library of independently testable validation scripts.
-- Read-only local repository auditing, with optional read-only GitHub metadata checks.
+- A self-contained copied Agent Skill with independently testable validation scripts and documented Copilot CLI acceptance.
+- Read-only local repository auditing. GitHub metadata checks are future work.
 - A focused initial rule set for conventions, CI, security, and developer experience.
 - Human-readable Markdown and versioned machine-readable JSON reports.
-- Configurable, opt-in enforcement for objective rules, plus safe proposed remediations.
-- Tests against small fixture repositories and RepoTend's own repository.
+- Configurable opt-in enforcement, documented suppressions with optional expiry, and two reviewable, approval-gated missing-file fixes.
+- Tests against fixtures, RepoTend itself, and two pinned public repositories.
 
 **Not planned for v0.1**
 
@@ -111,6 +111,9 @@ The roadmap is intentionally incremental: working checks should arrive before a 
 - [Installation and local skill setup](docs/INSTALLATION.md) — clean consumer setup, supported paths, and privacy limitations.
 - [External validation](docs/EXTERNAL_VALIDATION.md) — pinned public repository audits, regression findings, and known gaps.
 - [Agent validation](docs/AGENT_VALIDATION.md) — live Copilot CLI evidence, human approval, negative paths, and host limitations.
+- [Changelog](CHANGELOG.md) — release history and known limitations.
+- [v0.1.0 release notes](docs/RELEASE_NOTES_V0.1.0.md) — first experimental release highlights.
+- [Release acceptance](docs/RELEASE_ACCEPTANCE.md) — verified evidence and remaining tag/publication gates.
 
 ## Contributing
 

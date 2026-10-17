@@ -1,6 +1,6 @@
 {
   "name": "repotend",
-  "version": "0.1.0-dev",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "description": "Advisory repository health checks for small open-source projects",
@@ -16,7 +16,8 @@
     "remediate": "node skills/repotend/scripts/remediate.mjs",
     "format": "node scripts/check-style.mjs --write",
     "format:check": "node scripts/check-style.mjs",
-    "lint": "node scripts/lint.mjs && npm run typecheck"
+    "lint": "node scripts/lint.mjs && npm run typecheck",
+    "release:check": "node scripts/check-release.mjs"
   },
   "dependencies": {
     "yaml": "2.8.1"

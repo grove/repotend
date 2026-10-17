@@ -1,6 +1,6 @@
 # RepoTend Implementation Plan
 
-**Status:** implementation underway — initial self-audit and a typed rules engine are implemented; v0.1 is not complete  
+**Status:** v0.1 release candidate prepared; tag and GitHub Release remain pending review and acceptance  
 **Target:** a useful, auditable v0.1 rather than a broad rules framework  
 **References:** [README](../README.md) · [Design](DESIGN.md)
 
@@ -14,7 +14,7 @@
 
 ## Milestones
 
-**Progress note:** Initial contributor files, an advisory self-audit, and a TypeScript rules registry are in place. The engine uses Node.js built-in TypeScript stripping and a pinned YAML parser. CI runs formatting, lightweight linting, TypeScript type-checking, and unit tests. Two pinned independent public repositories are exercised in a separate PR-only integration job. A minimal remediation slice supports reviewed, exclusive creation of a missing PR template or EditorConfig. A copied skill installer now includes dependencies and docs, with separate-workspace regression tests. Live Copilot CLI discovery, preview, denial, human-approved same-ID apply, and post-apply verification have been observed; [agent validation](AGENT_VALIDATION.md) records the evidence and limitations. Justified suppressions with optional UTC expiry now remain visible in reports, and v0.1 JSON report/remediation schemas are checked in. Final release acceptance and tagging remain open. The config reader intentionally accepts a documented subset of YAML; see [configuration](CONFIGURATION.md).
+**Progress note:** Initial contributor files, an advisory self-audit, and a TypeScript rules registry are in place. The engine uses Node.js built-in TypeScript stripping and a pinned YAML parser. CI runs formatting, lightweight linting, TypeScript type-checking, and unit tests. Two pinned independent public repositories are exercised in a separate PR-only integration job. A minimal remediation slice supports reviewed, exclusive creation of a missing PR template or EditorConfig. A copied skill installer now includes dependencies and docs, with separate-workspace regression tests. Live Copilot CLI discovery, preview, denial, human-approved same-ID apply, and post-apply verification have been observed; [agent validation](AGENT_VALIDATION.md) records the evidence and limitations. Justified suppressions with optional UTC expiry now remain visible in reports, and v0.1 JSON report/remediation schemas are checked in. Version-alignment preflight, changelog and release notes are prepared; release-candidate CI acceptance, tagging, and publication remain open. The config reader intentionally accepts a documented subset of YAML; see [configuration](CONFIGURATION.md).
 
 
 ### M0 — Repository foundation
