@@ -1,87 +1,92 @@
-# Understanding RepoTend results
+# Understanding your RepoTend report
 
-RepoTend is a **conversation starter about repository maintenance**, not a grade. Its checks spot specific things in local files and workflows; they can't know every decision behind your project.
+**Got a warning? That doesn't necessarily mean anything is wrong.**
 
-## Start with the status
+RepoTend is looking for everyday repository-maintenance details. It can tell you that a file is missing or that a workflow *might* be doing extra work. It can't tell you whether every choice makes sense for your particular project.
 
-| Status | Plain-English meaning | What to do |
+The report is there to help you decide what matters — not give you more chores.
+
+## Reading a finding
+
+The report has a table with a **status**, a **rule name**, and a short **observation**.
+
+Imagine you see something like this (a simplified example):
+
+| Status | Rule | Observation |
 | --- | --- | --- |
-| **PASS** | This one check found what it expected. | Usually nothing — but remember the check is narrow. |
-| **WARN** | Something may be missing or worth reviewing. | Read the suggestion and decide whether it matters. |
-| **UNKNOWN** | RepoTend couldn't check reliably. | Check the file or setup; don't assume it passed. |
-| **NOT_APPLICABLE** | This check doesn't fit your project. | Nothing needed for that check. |
-| **FAIL** | A verified rule you explicitly chose to enforce wasn't met. | Decide whether to fix it or change your policy. |
-| **SUPPRESSED** | A warning/failure has an active, documented exception. | Keep the reason current; it's not the same as PASS. |
+| WARN | `repo.pr-template` | No pull request template found |
 
-With no configuration, the `small-oss` profile is **advisory**. You can have many warnings and still complete a successful audit.
+Before acting on it, ask three questions:
 
-## A concrete example
+**1. What did RepoTend actually find?**
 
-Imagine your audit reports:
+It didn't find a pull request template in the usual places inside this repository.
 
-- `repo.pr-template` — WARN: there's no recognized pull request template.
-- `dx.editorconfig` — PASS: the file exists.
-- `ci.duplicate-triggers` — WARN: both push and pull-request workflows might run for the same change.
+**2. Is there a good reason?**
 
-These mean:
+Maybe you don't accept outside contributions, or your GitHub organization supplies a shared template. RepoTend only checks the local repository — it can't see those organization settings.
 
-1. You **might** want a PR template, especially if contributors need guidance. Your organization may already provide one.
-2. RepoTend confirmed the EditorConfig file is present. It didn't judge whether its settings are good.
-3. Your workflows **might** overlap. RepoTend has not measured duplicate runs or CI costs; inspect your workflow triggers before making changes.
+**3. Would changing it help?**
 
-Those examples are explanations, **not a report from your own repository**.
+If contributors often leave out important details in PRs, a short template could help. If not, you can leave things as they are. A warning is a suggestion, not a demand.
 
-## Facts versus suggestions
+## Another example: a GitHub Actions warning
 
-A **verified** finding comes from a narrow check RepoTend can evaluate, such as the presence of a particular file. A **heuristic** is a helpful clue that needs context, such as whether a workflow's permissions are more powerful than necessary.
+Suppose RepoTend says your workflows might run on both a branch push and a pull request for the same change.
 
-The human-readable Markdown output focuses on statuses and short observations. For a full finding's `confidence`, `evidence`, `recommendation`, and `enforced` fields, use JSON:
+That could mean you're paying for unnecessary repeated CI runs. Or those runs might serve different purposes.
+
+RepoTend **hasn't measured** your actual runner usage. Review the workflow's triggers and what the jobs do before changing anything. It's especially important not to make required checks disappear by accident.
+
+This is why some findings are called *heuristics*: they're useful clues, but they need your judgment.
+
+## What the status words mean
+
+You'll mostly see **PASS** and **WARN**:
+
+- **PASS:** RepoTend checked one specific thing and found what it expected. It doesn't mean the whole repository is healthy or secure.
+- **WARN:** Something could be improved or may need attention. You decide whether it matters.
+- **UNKNOWN:** RepoTend couldn't get a reliable answer. Don't count this as a pass.
+- **NOT_APPLICABLE:** The check doesn't fit this repository. For example, there's no workflow to inspect.
+- **FAIL:** A check you've *explicitly chosen to enforce* found a verified problem.
+- **SUPPRESSED:** You've recorded an exception with a reason, so the finding stays visible without being treated as an active warning or failure while the exception applies. It isn't a pass.
+
+**All checks start out advisory.** Without extra configuration, warnings don't block the audit.
+
+## What should I look at first?
+
+Pick something that would make a real difference to the people using your project:
+
+- If people struggle to contribute, start with missing instructions or templates.
+- If GitHub Actions is hard to understand, review the workflow warnings one by one.
+- If everything seems intentional, you don't have to change anything just to make the report greener.
+
+You can also [document an exception or turn off a rule](CONFIGURATION.md). Documenting an exception keeps the reason visible, which is often more useful than hiding it.
+
+RepoTend can [preview two small additions](REMEDIATION.md): a missing pull request template and a basic EditorConfig file. Previewing changes never edits your repository, and applying them requires your approval.
+
+## Want to see the details behind a finding?
+
+The normal report is meant for humans, so it keeps things short. For more information — including file evidence, whether a finding is verified or a heuristic, and suggested action — ask for JSON:
 
 ```sh
-node skills/repotend/scripts/audit.mjs --root "/absolute/path/to/your-project" --format json
+node skills/repotend/scripts/audit.mjs --root "/full/path/to/your-project" --format json
 ```
 
-A security-related warning is **not** proof that your repository is insecure; likewise, a PASS is not security certification. For exact coverage and caveats, use the [rule catalog](RULE_CATALOG.md) and [workflow guide](WORKFLOW_CHECKS.md).
+Run this from the RepoTend folder. The [rule catalog](RULE_CATALOG.md) explains exactly what each rule checks and where its limits are.
 
-## What should I fix first?
+If you're running RepoTend in a script or CI, its exit codes mean:
 
-A sensible order for many small projects:
-
-1. **Make onboarding easy.** Fix missing contribution instructions or templates if new people use the project.
-2. **Review meaningful workflow warnings.** Check permissions and action references carefully, but don't change intentional settings blindly.
-3. **Tidy up low-effort conventions.** Add shared formatting hints if they benefit your team.
-4. **Document intentional differences.** You can keep a finding visible with a reason and optional expiry rather than hide it.
-
-This is a suggestion, not a priority ranking generated by the tool. Your project may need a different order.
-
-## Does a warning break CI?
-
-**Not by default.** These are the audit process exit codes:
-
-| Exit code | Meaning |
+| Code | Meaning |
 | --- | --- |
-| `0` | Audit finished with no *enforced* failures. Warnings and exceptions can still appear. |
-| `1` | At least one objectively checked rule that you explicitly enforce failed. |
-| `2` | RepoTend couldn't complete normally (for example, a bad configuration or execution error). |
+| `0` | The audit finished without an enforced failure. It may still have warnings. |
+| `1` | A rule you explicitly enforced failed. |
+| `2` | There was a setup, configuration, or execution error. The audit didn't complete normally. |
 
-You can turn on enforcement for selected objective rules in `.repotend.yml`:
+If you don't use CI or automation, you probably don't need to think about these numbers.
 
-```yaml
-schema: 1
-profile: small-oss
-rules:
-  repo.license-present:
-    enforce: true
-```
+## One thing to remember
 
-This makes a missing license a `FAIL`. Other advisory checks stay advisory. The [configuration guide](CONFIGURATION.md) describes which rules can be enforced, how suppressions work, and the intentionally limited YAML format.
+**A clean report isn't a security guarantee, and a report with warnings isn't a bad project.** RepoTend checks 13 deliberately narrow things. It's one helpful look at repository upkeep, not the final word on your code.
 
-## Can I act on suggestions safely?
-
-The **audit** never changes files. The **remediation preview** also never changes files. RepoTend currently only supports proposing a missing PR template or EditorConfig. Applying a proposed addition requires reviewing the entire diff and then explicitly supplying its matching plan ID. Existing files cannot be overwritten.
-
-See [Safe, reviewable fixes](REMEDIATION.md). For everything else, examine the evidence and make your own informed changes.
-
-## Still puzzled?
-
-Start with the [beginner walkthrough](GETTING_STARTED.md), check the [rule catalog](RULE_CATALOG.md) for the rule ID, or [open an issue](https://github.com/grove/repotend/issues) with the observation and a description of why it was surprising. **Don't post credentials or private repository contents.**
+[Back to the README](../README.md) · [Your first audit](GETTING_STARTED.md) · [All the checks](RULE_CATALOG.md)
