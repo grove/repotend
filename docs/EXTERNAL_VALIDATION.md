@@ -23,6 +23,21 @@ Initial static inspection of the projects revealed that RepoTend's file-presence
 
 The fixes retain symlink-safe, read-only verification and emit evidence pointing at the **actual** recognized path. Automated fixtures prevent these regressions. A syntactic file-presence PASS does not assert the file's content is adequate.
 
+## Observed results (GitHub Actions, October 17, 2026)
+
+[Successful PR integration run](https://github.com/grove/repotend/actions/runs/39071525371) audited both pinned revisions. The external job completed successfully and no audit execution errors or unknown results were reported.
+
+| Repository | PASS | WARN | UNKNOWN | Expectations |
+| --- | ---: | ---: | ---: | --- |
+| escape-string-regexp | 5 | 8 | 0 | All met |
+| Click | 9 | 4 | 0 | All met |
+
+**Escape-string-regexp warnings:** no repository-local contribution guide, code of conduct, PR template, or issue forms; token permissions are not explicitly configured; overlapping PR/push triggers, no PR cancellation, and floating action references were detected. Some repository documentation may be inherited from another GitHub location, so these absence warnings are *not* verified community-health deficiencies.
+
+**Click warnings:** no repository-local code of conduct or security policy; write-capable permissions in workflow/job configuration; and path filters that *could* affect required checks. The inspected publish workflow intentionally requests write privileges for release publishing, so a write-capable token is **not automatically a vulnerability**. Branch protection and inherited organization policies were not inspected.
+
+These outcomes are evidence of the current **static rules**, not proof of overall repository security, testing quality, or CI cost efficiency. Do not categorize every advisory WARN as a false positive or a defect without maintainer context. No target project code was executed, and the integration runner confirmed clean working trees after auditing.
+
 ## Live reproducible integration test
 
 `npm run validate:external` checks out the exact commits above into temporary directories using `git fetch --depth=1`, runs the existing RepoTend JSON entrypoint, and verifies known statuses. A mismatch fails the integration test; ordinary advisory warnings do not. After auditing, the script verifies a clean working tree and deletes its temporary workspace.
