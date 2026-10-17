@@ -52,3 +52,7 @@ For detailed workflow check behavior, see [WORKFLOW_CHECKS.md](WORKFLOW_CHECKS.m
 This first engine slice now supports a small, strictly validated [`.repotend.yml` subset](CONFIGURATION.md), deterministic reports, and rule-level opt-in enforcement for objective checks. It now implements a limited YAML-aware GitHub Actions analysis, but does **not** implement full actionlint expression validation, safe autofixes, API-based checks, or the full rule catalog from [DESIGN.md](DESIGN.md). Default results remain informational. Track these gaps through the [implementation plan](IMPLEMENTATION_PLAN.md), not through misleading PASS statuses.
 
 The original bootstrap checks have been migrated into a shared typed rule registry; the compatibility entrypoint runs this single implementation. New checks must join that registry rather than introducing a competing auditor.
+
+## External validation
+
+In addition to our own self-audit, RepoTend tests two public projects at pinned commits using `npm run validate:external` on pull requests. These are **advisory, static audits** of temporary checkouts and do not execute the projects under review. See [EXTERNAL_VALIDATION.md](EXTERNAL_VALIDATION.md) for the exact commits, expectations, and remaining limitations.
