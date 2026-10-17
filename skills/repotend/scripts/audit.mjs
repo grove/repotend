@@ -20,10 +20,23 @@ function withinRoot(root, filePath) {
   return candidate;
 }
 
+async function safeLstat(root, filePath) {
+  const parts = relative(root, withinRoot(root, filePath)).split(/[\\/]/);
+  let current = root;
+  for (const part of parts) {
+    current = join(current, part);
+    const stats = await lstat(current);
+    if (stats.isSymbolicLink()) return { kind: 'unknown', reason: 'Symlinked path segment is not followed' };
+    if (part === parts.at(-1) && current === withinRoot(root, filePath)) return { kind: 'present', stats };
+  }
+  return { kind: 'unknown', reason: 'Cannot inspect path' };
+}
+
 async function probeFile(root, filePath) {
   try {
-    const stats = await lstat(withinRoot(root, filePath));
-    if (stats.isSymbolicLink()) return { kind: 'unknown', reason: 'Symlink is not followed' };
+    const inspected = await safeLstat(root, filePath);
+    if (inspected.kind === 'unknown') return inspected;
+    const stats = inspected.stats;
     if (!stats.isFile()) return { kind: 'unknown', reason: 'Not a regular file' };
     return { kind: 'present', size: stats.size };
   } catch (error) {
@@ -34,9 +47,10 @@ async function probeFile(root, filePath) {
 
 async function listFiles(root, folder, extensionPattern) {
   try {
-    const dir = await lstat(withinRoot(root, folder));
-    if (dir.isSymbolicLink() || !dir.isDirectory()) {
-      return { kind: 'unknown', reason: 'Directory is a symlink or is not a directory' };
+    const inspected = await safeLstat(root, folder);
+    if (inspected.kind === 'unknown') return inspected;
+    if (!inspected.stats.isDirectory()) {
+      return { kind: 'unknown', reason: 'Not a directory' };
     }
     const entries = await readdir(withinRoot(root, folder), { withFileTypes: true });
     if (entries.some((e) => e.isSymbolicLink() && extensionPattern.test(e.name))) {
