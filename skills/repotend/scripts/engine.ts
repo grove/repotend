@@ -99,13 +99,21 @@ const evidence = (paths: string[]): Evidence[] => paths.map((path) => ({ path })
 const note = (status: Observed['status'], summary: string, paths: string[], recommendation?: string, confidence: Confidence = 'verified'): Observed =>
   ({ status, summary, evidence: evidence(paths), recommendation, confidence });
 
-function requiredFile(id: string, filename: string, label: string): Rule {
-  return { id, version: '1', category: id.startsWith('dx.') ? 'dx' : 'conventions', severity: 'warning', enforceable: true,
+// A file may legitimately be stored under any of these common project layouts.
+// Never follow symlinks. A failed probe remains UNKNOWN unless another candidate exists.
+function requiredFile(id: string, filenames: readonly string[], label: string, recommendation?: string): Rule {
+  return { id, version: '2', category: id.startsWith('dx.') ? 'dx' : 'conventions', severity: 'warning', enforceable: true,
     async check(reader) {
-      const state = await reader.probe(filename);
-      if (state.kind === 'present') return note('PASS', label + ' is present', [filename]);
-      if (state.kind === 'unknown') return note('UNKNOWN', label + ' could not be checked', [filename], state.reason);
-      return note('WARN', label + ' is missing', [filename], 'Consider adding ' + filename + ' if appropriate.');
+      let uncertain: string | undefined;
+      for (const filename of filenames) {
+        const state = await reader.probe(filename);
+        if (state.kind === 'present') return note('PASS', label + ' is present', [filename]);
+        if (state.kind === 'unknown') uncertain ??= filename;
+      }
+      if (uncertain) return note('UNKNOWN', label + ' could not be fully checked', [uncertain],
+        'Check unreadable or symlinked candidate files.');
+      return note('WARN', label + ' was not found', [...filenames],
+        recommendation ?? ('Consider adding ' + filenames[0] + ' if appropriate.'));
     },
   };
 }
@@ -113,7 +121,7 @@ function requiredFile(id: string, filename: string, label: string): Rule {
 const prTemplate: Rule = {
   id: 'repo.pr-template', version: '1', category: 'conventions', severity: 'warning', enforceable: true,
   async check(reader) {
-    const paths = ['.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', 'PULL_REQUEST_TEMPLATE.md', 'docs/PULL_REQUEST_TEMPLATE.md'];
+    const paths = ['.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', 'PULL_REQUEST_TEMPLATE.md', 'docs/PULL_REQUEST_TEMPLATE.md', 'docs/pull_request_template.md'];
     let unknown: string | undefined;
     for (const path of paths) {
       const state = await reader.probe(path);
@@ -138,13 +146,25 @@ const issueTemplates: Rule = {
 
 
 export const rules: readonly Rule[] = Object.freeze([
-  requiredFile('repo.license-present', 'LICENSE', 'License'),
-  requiredFile('repo.contributing', 'CONTRIBUTING.md', 'Contribution guide'),
-  requiredFile('repo.code-of-conduct', 'CODE_OF_CONDUCT.md', 'Code of conduct'),
-  requiredFile('repo.security-policy', 'SECURITY.md', 'Security policy'),
+  requiredFile('repo.license-present', [
+    'LICENSE', 'LICENSE.md', 'LICENSE.txt', 'LICENCE', 'LICENCE.md', 'LICENCE.txt',
+    'license', 'license.md', 'license.txt', 'COPYING', 'COPYING.md', 'COPYING.txt',
+  ], 'License'),
+  requiredFile('repo.contributing', [
+    'CONTRIBUTING.md', '.github/CONTRIBUTING.md', 'docs/CONTRIBUTING.md',
+    'docs/contributing.md', 'docs/contributing.rst', 'contributing.md',
+  ], 'Contribution guide'),
+  requiredFile('repo.code-of-conduct', [
+    'CODE_OF_CONDUCT.md', '.github/CODE_OF_CONDUCT.md', 'docs/CODE_OF_CONDUCT.md',
+    'code_of_conduct.md',
+  ], 'Code of conduct'),
+  requiredFile('repo.security-policy', [
+    'SECURITY.md', '.github/SECURITY.md', '.github/security.md',
+    'docs/SECURITY.md', 'security.md',
+  ], 'Security policy'),
   prTemplate,
   issueTemplates,
-  requiredFile('dx.editorconfig', '.editorconfig', 'EditorConfig'),
+  requiredFile('dx.editorconfig', ['.editorconfig'], 'EditorConfig'),
   ...workflowRules,
 ]);
 

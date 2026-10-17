@@ -11,7 +11,8 @@
     "test": "node --experimental-strip-types --test",
     "audit": "node skills/repotend/scripts/audit.mjs --format markdown",
     "audit:json": "node skills/repotend/scripts/audit.mjs --format json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "validate:external": "node scripts/validate-external.mjs"
   },
   "dependencies": {
     "yaml": "2.8.1"

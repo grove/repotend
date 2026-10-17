@@ -9,12 +9,12 @@ Use this skill when asked to assess a repository's health, adopt lightweight ope
 
 ## Scope and limitations
 
-The bundled TypeScript rules engine currently performs **thirteen focused checks** for repository conventions, EditorConfig, GitHub Actions efficiency, and workflow security. It does **not** measure CI savings, perform full actionlint validation, analyze the test pyramid, or inspect GitHub repository settings. Verified rule failures can be optionally enforced with `.repotend.yml` but audits are advisory by default. Read `docs/DOGFOODING.md` in the RepoTend repository for limitations.
+The bundled TypeScript rules engine currently performs **thirteen focused checks** for repository conventions, EditorConfig, GitHub Actions efficiency, and workflow security. It does **not** measure CI savings, perform full actionlint validation, analyze the test pyramid, or inspect GitHub repository settings. Verified rule failures can be optionally enforced with `.repotend.yml` but audits are advisory by default. Read `docs/DOGFOODING.md` and `docs/INSTALLATION.md` in the RepoTend tool checkout for limitations and installation.
 
 ## Process
 
 1. Identify the target repository root and the location of this skill's directory.
-2. Confirm Node.js 22.16+ is available and install the pinned dependencies with `npm ci` in RepoTend’s tool checkout (not the repository being audited). Then run the bundled script read-only:
+2. Confirm Node.js 22.16+ is available and install the pinned dependencies with `npm ci --ignore-scripts` in RepoTend’s tool checkout (not the repository being audited). The skill directory must point to the real checkout (for example, using a local symlink), because the scripts import dependencies from that checkout. Then run read-only:
 
    `node <absolute-path-to-skill>/scripts/audit.mjs --root <absolute-path-to-repository> --format json`
 
@@ -33,3 +33,7 @@ The validator works without an AI agent:
 `node <absolute-path-to-skill>/scripts/audit.mjs --root <repository-path> --format markdown`
 
 Both formats default to advisory. Explicitly enforced verified deviations exit with status 1, execution/configuration errors exit with 2. Run `npm ci && npm run typecheck && npm test` from the RepoTend repository to verify the validator. [Configuration reference](../../../docs/CONFIGURATION.md)
+
+## Installation verification
+
+See [installation guidance](../../../docs/INSTALLATION.md). The symlinked script has an automated smoke test. **Agent-host discovery and AI reasoning have not yet been verified**; do not claim they have.

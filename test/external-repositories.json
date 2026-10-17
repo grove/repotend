@@ -1,0 +1,24 @@
+[
+  {
+    "repository": "sindresorhus/escape-string-regexp",
+    "commit": "a7f7dabaf336bda98d2166848af15d9168b10bcf",
+    "purpose": "Small JavaScript project using lowercase license and GitHub security policy",
+    "expected": {
+      "repo.license-present": "PASS",
+      "repo.security-policy": "PASS",
+      "ci.workflow-validity": "PASS"
+    }
+  },
+  {
+    "repository": "pallets/click",
+    "commit": "2247b35ea1c47c727d7a06e51fa280e12a863ff6",
+    "purpose": "Python project with six GitHub Actions workflows and conventional docs layout",
+    "expected": {
+      "repo.license-present": "PASS",
+      "repo.contributing": "PASS",
+      "repo.pr-template": "PASS",
+      "repo.issue-templates": "PASS",
+      "ci.workflow-validity": "PASS"
+    }
+  }
+]
