@@ -1,6 +1,6 @@
 # External validation: first consumer milestone
 
-**Scope:** read-only, pinned-commit audits of public repositories plus synthetic regression fixtures and a local symlinked-skill smoke test. RepoTend is still experimental. These tests do **not** establish that an AI host automatically discovers the skill or that every recommendation is correct.
+**Scope:** read-only, pinned-commit audits of public repositories plus synthetic regression fixtures and copied-skill installation tests. RepoTend is still experimental. These deterministic tests do **not** establish AI-host discovery or recommendation quality; live host observations are recorded separately in [agent validation](AGENT_VALIDATION.md).
 
 ## Projects and rationale
 
@@ -48,16 +48,16 @@ The report includes complete rule statuses and notes. `ci.workflow-validity` is 
 
 ## Installation and agent integration
 
-The skill currently depends on the RepoTend source checkout and its pinned Node dependencies. We documented a local symlink installation for compatible agents in [INSTALLATION.md](INSTALLATION.md) and added a test that runs the skill's bundled auditor from a separate workspace. This validates its **script invocation**, not automatic skill discovery or language-model reasoning in a particular agent host. Until host-level testing is available, those capabilities remain unverified.
+The [installer](INSTALLATION.md) now copies the skill, scripts, docs, and pinned runtime dependency into a self-contained directory. Tests run it from a separate consumer workspace and delete its source checkout before exercising audit and remediation. These tests validate script behavior; [agent validation](AGENT_VALIDATION.md) separately records actual Copilot CLI discovery, validator calls, denial, human-approved same-ID apply, and post-apply verification.
 
 ## Known gaps
 
 - Results from two projects are illustrative, not statistically representative; additional user projects are needed to estimate false-positive rates.
 - CI findings are currently static; no workflow run-time/cost measurements or branch-protection API access.
 - Existing repo-health recommendations may be inherited via organization-wide community files, which the local-only auditor cannot inspect.
-- Installation is source-based and not a standalone skill distribution.
-- A live AI agent end-to-end user session has not been verified; do not claim it has.
+- Installation starts from a source checkout; no published package or release archive is provided.
+- Live acceptance covers one constrained Copilot CLI configuration and disposable fixture; personal-directory discovery and other host/platform configurations remain unverified.
 
 ## Follow-up
 
-Expand validation to a third project from a different ecosystem, capture reviewer feedback on warnings, and add an integration test in one actual supported AI host. Keep every reported uncertainty visible rather than declaring a repository fully compliant based on a handful of static checks.
+Expand validation to a third project from a different ecosystem, capture reviewer feedback on warnings, and broaden opt-in real-host coverage. Keep every reported uncertainty visible rather than declaring a repository fully compliant based on a handful of static checks.

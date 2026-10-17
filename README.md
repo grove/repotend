@@ -48,15 +48,21 @@ node skills/repotend/scripts/remediate.mjs --root /path/to/project
 node skills/repotend/scripts/remediate.mjs --root /path/to/project --format json
 ```
 
-See [reviewable remediation and safety](docs/REMEDIATION.md) for the separate apply command and limitations. The Agent Skill can orchestrate this workflow, but host-level discovery and AI reasoning remain unverified.
+See [reviewable remediation and safety](docs/REMEDIATION.md) for the separate apply command and limitations. [Agent validation](docs/AGENT_VALIDATION.md) records live Copilot CLI discovery, preview, denial, human-approved apply, and verification separately from script-level tests.
 
-### Planned agent experience
+### Install the experimental Copilot CLI skill
 
-After installing the skill in a compatible agent, a maintainer could ask:
+From a separate RepoTend checkout, install a complete copy with pinned runtime dependencies:
 
-> Audit this repository with RepoTend. Explain the three highest-value improvements, and prepare a patch for the ones that are safe to apply.
+```sh
+node scripts/install-skill.mjs --dest "$HOME/.copilot/skills/repotend"
+```
 
-The experimental skill can invoke the bundled validator via a local symlink; its automatic discovery and responses inside specific agent hosts still require validation. A standalone CLI and a reusable GitHub Action are possible later interfaces; they are **not** v0.1 prerequisites.
+Then start Copilot CLI from the repository to audit and ask:
+
+> Audit this repository with RepoTend. Explain verified findings separately from heuristic recommendations. Do not change files.
+
+The installation includes scripts, documentation, and dependencies; it works without the source checkout or machine-specific symlinks. Follow [installation, update, uninstall, and approval examples](docs/INSTALLATION.md). A live Copilot CLI session loaded the skill, ran its validator, waited for human approval, applied that exact reviewed plan, and verified the result in a disposable repository. See [agent validation](docs/AGENT_VALIDATION.md) for redacted evidence, negative paths, and the tested host configuration. A standalone CLI and a reusable GitHub Action remain possible later interfaces.
 
 ## Principles
 
@@ -100,6 +106,7 @@ The roadmap is intentionally incremental: working checks should arrive before a 
 - [GitHub Actions checks](docs/WORKFLOW_CHECKS.md) — scope, evidence, and limitations of workflow analysis.
 - [Installation and local skill setup](docs/INSTALLATION.md) — clean consumer setup, supported paths, and privacy limitations.
 - [External validation](docs/EXTERNAL_VALIDATION.md) — pinned public repository audits, regression findings, and known gaps.
+- [Agent validation](docs/AGENT_VALIDATION.md) — live Copilot CLI evidence, human approval, negative paths, and host limitations.
 
 ## Contributing
 

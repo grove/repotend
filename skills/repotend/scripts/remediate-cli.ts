@@ -1,7 +1,7 @@
 import process from 'node:process';
-import { applyRemediation, planRemediation, renderRemediationMarkdown } from './remediation.ts';
 
 async function main(): Promise<void> {
+  const { applyRemediation, planRemediation, renderRemediationMarkdown } = await import('./remediation.ts');
   let root = process.cwd();
   let format: 'json' | 'markdown' = 'markdown';
   let apply: string | undefined;
