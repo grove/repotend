@@ -14,6 +14,7 @@ npm run typecheck
 npm test
 node skills/repotend/scripts/audit.mjs --format markdown
 node skills/repotend/scripts/audit.mjs --format json
+node skills/repotend/scripts/remediate.mjs # read-only plan preview
 ```
 
 The workflow appends a summary to GitHub Actions. **Warnings do not block merges.** A runtime or configuration error fails the job, but an advisory finding does not. The workflow does not skip required checks based on changed-file filters.
@@ -49,7 +50,9 @@ For detailed workflow check behavior, see [WORKFLOW_CHECKS.md](WORKFLOW_CHECKS.m
 
 ## Known gaps and next steps
 
-This first engine slice now supports a small, strictly validated [`.repotend.yml` subset](CONFIGURATION.md), deterministic reports, and rule-level opt-in enforcement for objective checks. It now implements a limited YAML-aware GitHub Actions analysis, but does **not** implement full actionlint expression validation, safe autofixes, API-based checks, or the full rule catalog from [DESIGN.md](DESIGN.md). Default results remain informational. Track these gaps through the [implementation plan](IMPLEMENTATION_PLAN.md), not through misleading PASS statuses.
+This first engine slice now supports a small, strictly validated [`.repotend.yml` subset](CONFIGURATION.md), deterministic reports, and rule-level opt-in enforcement for objective checks. It now implements a limited YAML-aware GitHub Actions analysis, but does **not** implement full actionlint expression validation, generic autofixes, API-based checks, or the full rule catalog from [DESIGN.md](DESIGN.md). A [narrow remediation feature](REMEDIATION.md) can preview and, only with a reviewed plan ID, add two missing files. Default results remain informational. Track these gaps through the [implementation plan](IMPLEMENTATION_PLAN.md), not through misleading PASS statuses.
+
+The default self-audit CI also generates the **read-only remediation preview**, ensuring RepoTend does not write into itself during automated checks.
 
 The original bootstrap checks have been migrated into a shared typed rule registry; the compatibility entrypoint runs this single implementation. New checks must join that registry rather than introducing a competing auditor.
 

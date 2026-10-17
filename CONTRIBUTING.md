@@ -19,9 +19,10 @@ npm run typecheck
 npm test
 node skills/repotend/scripts/audit.mjs --format markdown
 node skills/repotend/scripts/audit.mjs --format json
+node skills/repotend/scripts/remediate.mjs # read-only preview
 ```
 
-Static audit never runs target-repository code or changes files. The current engine contains basic static checks, not the complete v0.1 feature set. See [workflow check limitations](docs/WORKFLOW_CHECKS.md).
+Static audit and remediation preview never run target-repository code or change files. Applying a remediation requires a reviewed plan ID and explicit approval. The current engine contains basic static checks, not the complete v0.1 feature set. See [workflow check limitations](docs/WORKFLOW_CHECKS.md).
 
 When implementing rules, add positive, negative, and ambiguous fixtures. Never confuse a missing capability with a PASS. Describe limitations in the resulting finding.
 

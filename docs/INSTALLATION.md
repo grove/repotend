@@ -22,7 +22,15 @@ node skills/repotend/scripts/audit.mjs --root /absolute/path/to/project --format
 node skills/repotend/scripts/audit.mjs --root /absolute/path/to/project --format json
 ```
 
-The validator does not modify the audited project or execute its build/test scripts. It returns `0` for advisory findings, `1` for explicitly enforced violations, and `2` on tool/configuration errors. See [configuration](CONFIGURATION.md).
+The audit and the separate remediation **preview** do not modify the audited project or execute its build/test scripts. It returns `0` for advisory findings, `1` for explicitly enforced violations, and `2` on tool/configuration errors. See [configuration](CONFIGURATION.md).
+
+### Preview supported fixes (optional)
+
+```sh
+node skills/repotend/scripts/remediate.mjs --root /absolute/path/to/project
+```
+
+This only prints diffs. Applying the two supported missing-file templates requires an explicit command with the full reviewed plan ID. See [remediation and safety](REMEDIATION.md).
 
 ## 2. Make the skill discoverable locally (optional)
 
