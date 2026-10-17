@@ -20,7 +20,7 @@ const status = (r, id) => r.findings.find((f) => f.ruleId === id).status;
 test('empty repo: warnings are advisory and workflows are not applicable', async (t) => {
   const root = await fixture(t);
   const report = await runAudit(root);
-  assert.equal(report.findings.length, 8);
+  assert.equal(report.findings.length, 13);
   assert.equal(report.findings.filter((f) => f.status === 'FAIL').length, 0);
   assert.equal(status(report, 'repo.license-present'), 'WARN');
   assert.equal(status(report, 'security.workflow-permissions'), 'NOT_APPLICABLE');
@@ -30,15 +30,15 @@ test('empty repo: warnings are advisory and workflows are not applicable', async
 test('repository files and explicit workflow permissions pass narrow checks', async (t) => {
   const root = await fixture(t);
   for (const p of ['LICENSE', 'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md', 'SECURITY.md', '.editorconfig', '.github/pull_request_template.md', '.github/ISSUE_TEMPLATE/bug_report.yml']) await put(root, p);
-  await put(root, '.github/workflows/check.yml', 'name: check\npermissions:\n  contents: read\n');
+  await put(root, '.github/workflows/check.yml', 'name: check\non: push\npermissions:\n  contents: read\njobs:\n  tests:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo ok\n');
   const report = await runAudit(root);
-  assert(report.findings.every((f) => f.status === 'PASS'));
-  assert.match(renderMarkdown(report), /8 passed · 0 warnings/);
+  assert(report.findings.every((f) => ['PASS', 'NOT_APPLICABLE'].includes(f.status)));
+  assert.match(renderMarkdown(report), /12 passed · 0 warnings/);
 });
 
 test('permissions heuristic warns without a permissions stanza', async (t) => {
   const root = await fixture(t);
-  await put(root, '.github/workflows/check.yml', 'name: check\n# permissions: write-all\njobs: {}\n');
+  await put(root, '.github/workflows/check.yml', 'name: check\non: push\n# permissions: write-all\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo ok\n');
   const report = await runAudit(root);
   assert.equal(status(report, 'security.workflow-permissions'), 'WARN');
   assert.equal(report.findings.find((f) => f.ruleId === 'security.workflow-permissions').confidence, 'heuristic');

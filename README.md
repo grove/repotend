@@ -4,7 +4,7 @@
 
 RepoTend is an open-source, AI-assisted toolkit for maintaining healthy **small GitHub repositories**. It helps maintainers audit engineering practices, understand actionable findings, and make safe, reviewable improvements—without introducing enterprise-scale process.
 
-> **Project status: experimental / pre-v0.1.** A reusable TypeScript rule registry, read-only audit script, and portable Agent Skill live in this repository. They cover eight narrow checks, **not** the planned v0.1 feature set. The capabilities below describe the broader intended first release.
+> **Project status: experimental / pre-v0.1.** A reusable TypeScript rule registry, read-only audit script, and portable Agent Skill live in this repository. They cover thirteen focused checks, **not** the planned v0.1 feature set. The capabilities below describe the broader intended first release.
 
 ## Why RepoTend?
 
@@ -27,15 +27,17 @@ RepoTend's planned workflow is **audit → explain → propose → fix → verif
 
 ### Experimental self-audit (available now)
 
-Node.js **22.16+** is required for built-in TypeScript stripping; no npm dependencies are needed to run the audits:
+Node.js **22.16+** is required for built-in TypeScript stripping. Install the pinned dependencies before running audits:
 
 ```sh
+npm ci
+npm run typecheck
 npm test
 node skills/repotend/scripts/audit.mjs --format markdown
 node skills/repotend/scripts/audit.mjs --format json
 ```
 
-For a different repository, pass `--root /path/to/repository`. The skill lives at [skills/repotend/SKILL.md](skills/repotend/SKILL.md). See [dogfooding policy and limitations](docs/DOGFOODING.md). The default `small-oss` profile is advisory. The optional [`.repotend.yml` configuration](docs/CONFIGURATION.md) can disable checks or enforce individual verified rules. See the [configuration guide](docs/CONFIGURATION.md) for supported syntax, statuses, and exit codes. This remains a limited audit, not a full CI validator or security scanner.
+For a different repository, pass `--root /path/to/repository`. The skill lives at [skills/repotend/SKILL.md](skills/repotend/SKILL.md). See [dogfooding policy and limitations](docs/DOGFOODING.md). The default `small-oss` profile is advisory. The optional [`.repotend.yml` configuration](docs/CONFIGURATION.md) can disable checks or enforce individual verified rules. See the [configuration guide](docs/CONFIGURATION.md) for supported syntax, statuses, and exit codes. The workflow checks now use a YAML 1.2 parser and include static CI efficiency and security recommendations, but this remains a limited audit, not a complete GitHub Actions semantic validator or security scanner.
 
 ### Planned agent experience
 
@@ -83,6 +85,7 @@ The roadmap is intentionally incremental: working checks should arrive before a 
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md) — milestones, initial rule backlog, acceptance criteria, and non-goals.
 - [Dogfooding](docs/DOGFOODING.md) — current self-audit rules and their limitations.
 - [Configuration](docs/CONFIGURATION.md) — supported policy syntax, enforcement, and exit codes.
+- [GitHub Actions checks](docs/WORKFLOW_CHECKS.md) — scope, evidence, and limitations of workflow analysis.
 
 ## Contributing
 

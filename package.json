@@ -4,10 +4,20 @@
   "private": true,
   "type": "module",
   "description": "Advisory repository health checks for small open-source projects",
-  "engines": { "node": ">=22.16.0" },
+  "engines": {
+    "node": ">=22.16.0"
+  },
   "scripts": {
     "test": "node --experimental-strip-types --test",
     "audit": "node skills/repotend/scripts/audit.mjs --format markdown",
-    "audit:json": "node skills/repotend/scripts/audit.mjs --format json"
+    "audit:json": "node skills/repotend/scripts/audit.mjs --format json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "yaml": "2.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.30",
+    "typescript": "5.9.3"
   }
 }

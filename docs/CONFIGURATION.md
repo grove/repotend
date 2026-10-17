@@ -1,6 +1,6 @@
 # RepoTend configuration (experimental)
 
-RepoTend works with **no configuration file**. Its default `small-oss` profile enables all eight current checks as **advisory only**.
+RepoTend works with **no configuration file**. Its default `small-oss` profile enables all thirteen current checks as **advisory only**.
 
 To disable a check or enforce an objective rule, create `.repotend.yml` at the target repository root:
 
@@ -43,4 +43,4 @@ node skills/repotend/scripts/audit.mjs --root . --format json
 
 ## Limitations and safety
 
-The validator uses Node.js 22.16+ built-in TypeScript stripping via a compatibility launcher, without npm dependencies. Static checks inspect repository files read-only; they do **not** run untrusted test/build scripts. Symlinked paths are not followed, and file-size bounds apply to workflow/configuration reads. The workflow-permissions rule detects the *presence* of a permissions stanza with a heuristic; a pass does not imply least-privilege permissions or a security audit.
+The validator uses Node.js 22.16+ built-in TypeScript stripping via a compatibility launcher, with a pinned YAML parser dependency. Static checks inspect repository files read-only; they do **not** run untrusted test/build scripts. Symlinked paths are not followed, and file-size bounds apply to workflow/configuration reads. Workflow rules use YAML 1.2 parsing and line-numbered evidence, but a PASS does not imply least-privilege permissions or a security audit. See [WORKFLOW_CHECKS.md](WORKFLOW_CHECKS.md).

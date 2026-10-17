@@ -1,6 +1,7 @@
 import { lstat, readdir, readFile, realpath } from 'node:fs/promises';
 import { resolve, relative, isAbsolute, join, sep } from 'node:path';
 import { loadConfig, type Config } from './config.ts';
+import { workflowRules } from './workflows.ts';
 
 export type Status = 'PASS' | 'WARN' | 'FAIL' | 'UNKNOWN' | 'NOT_APPLICABLE';
 export type Severity = 'info' | 'warning' | 'error';
@@ -135,24 +136,6 @@ const issueTemplates: Rule = {
   },
 };
 
-const workflowPermissions: Rule = {
-  id: 'security.workflow-permissions', version: '1', category: 'security', severity: 'warning', enforceable: false,
-  async check(reader) {
-    const listed = await reader.list('.github/workflows', /\.ya?ml$/i);
-    if (listed.kind === 'unknown') return note('UNKNOWN', 'Workflow files could not be inspected', [], listed.reason);
-    if (listed.paths.length === 0) return note('NOT_APPLICABLE', 'No GitHub Actions workflows found', []);
-    const missing: string[] = []; const uncertain: string[] = [];
-    for (const path of listed.paths) {
-      const result = await reader.read(path);
-      if (result.kind !== 'present') { uncertain.push(path); continue; }
-      if (!/^[ \t]*permissions[ \t]*:/m.test(result.text.replace(/^[ \t]*#.*$/gm, ''))) missing.push(path);
-    }
-    if (uncertain.length) return note('UNKNOWN', 'Some workflows could not be inspected', uncertain, 'Review unreadable or oversized workflow files.');
-    if (missing.length) return note('WARN', 'Explicit token permissions were not detected in some workflows', missing, 'Review token scopes and repository defaults; this is a textual heuristic.', 'heuristic');
-    return note('PASS', 'An explicit permissions stanza was detected in each workflow', listed.paths,
-      'Presence alone does not prove least privilege. This is a textual heuristic.', 'heuristic');
-  },
-};
 
 export const rules: readonly Rule[] = Object.freeze([
   requiredFile('repo.license-present', 'LICENSE', 'License'),
@@ -162,7 +145,7 @@ export const rules: readonly Rule[] = Object.freeze([
   prTemplate,
   issueTemplates,
   requiredFile('dx.editorconfig', '.editorconfig', 'EditorConfig'),
-  workflowPermissions,
+  ...workflowRules,
 ]);
 
 export async function runAudit(repositoryRoot = process.cwd(), selected: readonly Rule[] = rules): Promise<Report> {
