@@ -1,6 +1,6 @@
 # RepoTend v0.1.0 release acceptance evidence
 
-**State:** release candidate; **not tagged or published**. This record separates previously observed acceptance evidence from checks that must run on the exact release commit.
+**State: v0.1.0 published on October 18, 2026 (Europe/Oslo).** [GitHub Release](https://github.com/grove/repotend/releases/tag/v0.1.0). The annotated tag points to the reviewed PR #10 merge commit `37fd2e2f8b525e24d4e6ac26a0e8f021c3bf4f6e`. This record preserves the acceptance and publication evidence.
 
 ## Evidence carried forward
 
@@ -38,28 +38,16 @@ npm run validate:external
 
 **PR acceptance:** review the candidate PR's `self-audit` and PR-only `external-validation` GitHub Actions jobs. The public external GitHub smoke test requires network access; this is intentionally not replaced by fixture-only assertions. Confirm copied-skill installation tests run and pass through `npm test`.
 
-## Release-owner gates (after PR merge)
+## Completed release-owner gates
 
-- [ ] Review the exact merged `main` SHA and ensure its CI passed.
-- [ ] Create annotated tag **`v0.1.0` pointing at that SHA**. Do not tag a branch before the release PR is accepted.
-- [ ] Confirm both JSON Schema `$id` URLs resolve to the tagged versions. Pre-tag local checks only validate their *declared targets*, not remote availability.
-- [ ] Run a source checkout/install smoke test using the tag rather than `main`.
-- [ ] Publish GitHub Release `v0.1.0` using [release notes](RELEASE_NOTES_V0.1.0.md), with experimental limitations visible.
-- [ ] Verify the published release/tag and installation links; then update release status in the repository as needed.
+- [x] The reviewed PR #10 merge commit passed [main CI](https://github.com/grove/repotend/actions/runs/39078605451).
+- [x] A [one-time release workflow](https://github.com/grove/repotend/actions/runs/39079089764) checked out the approved commit and passed formatting, linting, tests, release preflight, self-audit, read-only remediation preview, pinned external audits, and a copied-skill installation smoke test before tagging.
+- [x] The annotated tag `v0.1.0` points to `37fd2e2f8b525e24d4e6ac26a0e8f021c3bf4f6e`, verified through GitHub's Git tag object.
+- [x] Both tagged [audit report](https://raw.githubusercontent.com/grove/repotend/v0.1.0/schemas/report.schema.json) and [remediation](https://raw.githubusercontent.com/grove/repotend/v0.1.0/schemas/remediation.schema.json) JSON Schema URLs were verified; their `$id` values match the published tag.
+- [x] A [tagged-source installation workflow](https://github.com/grove/repotend/actions/runs/39079213537) checked out `v0.1.0`, installed a copied skill from the tagged source, and verified audit and remediation-preview JSON in a disposable consumer workspace.
+- [x] [GitHub Release v0.1.0](https://github.com/grove/repotend/releases/tag/v0.1.0) was published using `docs/RELEASE_NOTES_V0.1.0.md` and verified as neither draft nor prerelease.
 
-Example owner commands, executed **only after approval and merge**:
-
-```sh
-git fetch origin main --tags
-git checkout main
-git pull --ff-only origin main
-git tag -a v0.1.0 <reviewed-merge-sha> -m 'RepoTend v0.1.0'
-git push origin v0.1.0
-# After verifying tag and schema URLs:
-gh release create v0.1.0 --title 'RepoTend v0.1.0' --notes-file docs/RELEASE_NOTES_V0.1.0.md
-```
-
-Replace `<reviewed-merge-sha>` with the exact verified merge SHA. Tagging and publishing are intentionally **not automated** by the PR.
+The temporary release workflows were removed after publication. Their run URLs remain accessible as evidence. These results do not imply comprehensive security certification or portability to every agent host.
 
 ## Post-v0.1 direction
 

@@ -1,6 +1,6 @@
-# v0.1.0 release checklist (pre-release)
+# v0.1.0 release checklist (archived)
 
-This is the acceptance checklist for the **v0.1.0 release candidate**, not a claim that a release has been published. Evidence and remaining post-merge operations are recorded in [release acceptance](RELEASE_ACCEPTANCE.md). Do not tag or publish until the reviewed release PR is merged and its CI passes.
+This is the historical acceptance checklist for the experimental [v0.1.0 release](https://github.com/grove/repotend/releases/tag/v0.1.0), published on October 18, 2026 (Europe/Oslo). The verified release gates and run URLs are in [release acceptance](RELEASE_ACCEPTANCE.md). Unchecked items are preserved for follow-up rather than represented as completed.
 
 ## Product readiness
 
@@ -24,10 +24,10 @@ npm run remediate   # read-only preview
 npm run validate:external  # requires GitHub network access
 ```
 
-- [ ] All checks pass from a fresh checkout on a supported Node.js 22.16+ runtime.
-- [ ] Self-audit produces no unexplained warnings or errors and read-only remediation proposes no edits to RepoTend itself.
-- [ ] External pinned JavaScript and Python repository audits pass without running target project code.
-- [ ] Install a copied skill in a disposable consumer workspace, remove the tool checkout, and verify audit, preview, stale-plan refusal, and approved apply. Do not put authenticated Copilot sessions into default CI.
+- [x] All checks pass from a fresh checkout on a supported Node.js 22.16+ runtime.
+- [x] Self-audit produces no unexplained warnings or errors and read-only remediation proposes no edits to RepoTend itself.
+- [x] External pinned JavaScript and Python repository audits pass without running target project code.
+- [x] Install a copied skill in a disposable consumer workspace, remove the tool checkout, and verify audit, preview, stale-plan refusal, and approved apply. Do not put authenticated Copilot sessions into default CI.
 - [ ] Review dependency lockfile, license notices, secret handling, and workflow permissions.
 
 ## Release material
@@ -35,8 +35,8 @@ npm run validate:external  # requires GitHub network access
 - [ ] Confirm README accurately describes the release candidate and its experimental limitations; mark publication only after the tag and GitHub Release exist.
 - [x] Set `package.json`, package-lock root versions, and audit `toolVersion` to `0.1.0`; the read-only pre-tag script verifies alignment.
 - [x] Add a v0.1.0 candidate changelog entry and [release notes](RELEASE_NOTES_V0.1.0.md) documenting host/platform limitations, rules, report semantics, and upgrades.
-- [ ] After tagging, confirm the versioned JSON Schema `$id` URLs resolve. The pre-tag gate only checks their intended targets.
-- [ ] Tag `v0.1.0` on the reviewed merge commit and publish GitHub Release only after PR CI, clean-install acceptance, and owner approval.
+- [x] After tagging, confirm the versioned JSON Schema `$id` URLs resolve. The pre-tag gate only checks their intended targets.
+- [x] Tag `v0.1.0` on the reviewed merge commit and publish GitHub Release only after PR CI, clean-install acceptance, and owner approval.
 - [ ] Record what remains post-v0.1: test-pyramid analysis, deeper CI dependency/cost analysis, language-specific rules, package distribution, additional agent hosts, and API-based GitHub settings checks.
 
 **Do not mistake an advisory PASS for certification.** Post-release feedback should prioritize actionable, low-false-positive findings over adding broad scoring features.

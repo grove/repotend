@@ -4,7 +4,7 @@
 
 RepoTend is an open-source, AI-assisted toolkit for maintaining healthy **small GitHub repositories**. It helps maintainers audit engineering practices, understand actionable findings, and make safe, reviewable improvements—without introducing enterprise-scale process.
 
-> **Project status: experimental (v0.1 series).** The current code provides thirteen focused checks, a portable Copilot-compatible Agent Skill, advisory reporting, and two approval-gated fixes. This is an initial release, not a comprehensive repository-security scanner.
+> **Project status: [v0.1.0 released](https://github.com/grove/repotend/releases/tag/v0.1.0) · experimental.** The current code provides thirteen focused checks, a portable Copilot-compatible Agent Skill, advisory reporting, and two approval-gated fixes. This is an initial release, not a comprehensive repository-security scanner.
 
 ## Why RepoTend?
 

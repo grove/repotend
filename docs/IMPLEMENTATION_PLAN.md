@@ -1,6 +1,6 @@
 # RepoTend Implementation Plan
 
-**Status:** v0.1 release candidate prepared; tag and GitHub Release remain pending review and acceptance  
+**Status:** [v0.1.0 published](https://github.com/grove/repotend/releases/tag/v0.1.0) on October 18, 2026 (Europe/Oslo); post-release learning ahead  
 **Target:** a useful, auditable v0.1 rather than a broad rules framework  
 **References:** [README](../README.md) · [Design](DESIGN.md)
 
