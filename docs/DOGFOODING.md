@@ -4,11 +4,13 @@ RepoTend is its own initial reference repository. Every implemented check should
 
 ## Current setup (experimental)
 
-The dependency-free Node.js 22.16+ TypeScript rules engine, invoked through `skills/repotend/scripts/audit.mjs`, checks eight simple properties. The same script is bundled with `skills/repotend/SKILL.md` and runs in `.github/workflows/repo-health.yml` on PRs and default-branch pushes. `npm test` exercises the auditor with fixture repositories.
+The Node.js 22.16+ TypeScript rules engine, invoked through `skills/repotend/scripts/audit.mjs`, checks **thirteen** repository and workflow properties. Install pinned dependencies with `npm ci`. The same script is bundled with `skills/repotend/SKILL.md` and runs in `.github/workflows/repo-health.yml` on PRs and default-branch pushes. `npm test` exercises the auditor with fixture repositories.
 
 Run locally:
 
 ```sh
+npm ci
+npm run typecheck
 npm test
 node skills/repotend/scripts/audit.mjs --format markdown
 node skills/repotend/scripts/audit.mjs --format json
@@ -27,21 +29,26 @@ The workflow appends a summary to GitHub Actions. **Warnings do not block merges
 | `repo.pr-template` | Recognized PR template exists | Does not assess review quality |
 | `repo.issue-templates` | Issue forms/templates exist | Does not validate field structure |
 | `dx.editorconfig` | .editorconfig exists | Does not verify formatter consistency |
-| `security.workflow-permissions` | Each YAML workflow contains a permissions stanza | Textual heuristic; not a least-privilege/security verdict |
+| `security.workflow-permissions` | YAML-aware workflow- and job-level permissions | Contextual heuristic; not a least-privilege/security verdict |
+| `ci.workflow-validity` | YAML syntax and basic structure | Not a complete GitHub Actions validator |
+| `ci.concurrency` | PR cancellation opportunities | Heuristic; cancellations can be harmful |
+| `ci.duplicate-triggers` | Potentially overlapping push/PR triggers | Heuristic; not observed runner usage |
+| `ci.path-filter-safety` | Event-level path filtering | Required-check status is not available offline |
+| `security.action-pinning` | Floating external action references | Pinning does not prove action safety |
 
-The rules engine only inspects local, regular files and never runs target-repository commands. Symlinks and unreadable files are treated as unknown where detectable. No GitHub API or LLM is needed for validation.
+For detailed workflow check behavior, see [WORKFLOW_CHECKS.md](WORKFLOW_CHECKS.md). The rules engine only inspects local, regular files and never runs target-repository commands. Symlinks and unreadable files are treated as unknown where detectable. No GitHub API or LLM is needed for validation.
 
 ## Dogfooding contract
 
 1. **Each new rule must run on this repository.** Add fixtures for passing, warning, unknown, not-applicable, and hostile inputs as relevant.
-2. **Do not hide warnings.** Address genuinely useful findings or document why the recommendation is not applicable. Suppression and enforcement configuration arrive in a later milestone.
+2. **Do not hide warnings.** Address genuinely useful findings or document why the recommendation is not applicable. Enforcement is opt-in for verified rules; an explicit suppression format remains a later milestone.
 3. **Do not reward empty checklists.** A check must show evidence; a PASS is limited to what it actually tested.
 4. **Don't weaken CI to improve the score.** Never skip required workflows via risky path filters or remove tests to achieve faster builds.
 5. **Measure before claiming improvements.** Estimated CI savings or test-quality improvements must be distinguished from observed results.
-6. **Keep it lightweight.** Audit remains read-only and dependency-free until added complexity is justified.
+6. **Keep it lightweight.** Audit remains read-only and limited to a pinned YAML parser and development tools unless more dependencies demonstrably help.
 
 ## Known gaps and next steps
 
-This first engine slice now supports a small, strictly validated [`.repotend.yml` subset](CONFIGURATION.md), deterministic reports, and rule-level opt-in enforcement for objective checks. It does **not** implement advanced GitHub Actions parsing, safe autofixes, API-based checks, or the full rule catalog from [DESIGN.md](DESIGN.md). Default results remain informational. Track these gaps through the [implementation plan](IMPLEMENTATION_PLAN.md), not through misleading PASS statuses.
+This first engine slice now supports a small, strictly validated [`.repotend.yml` subset](CONFIGURATION.md), deterministic reports, and rule-level opt-in enforcement for objective checks. It now implements a limited YAML-aware GitHub Actions analysis, but does **not** implement full actionlint expression validation, safe autofixes, API-based checks, or the full rule catalog from [DESIGN.md](DESIGN.md). Default results remain informational. Track these gaps through the [implementation plan](IMPLEMENTATION_PLAN.md), not through misleading PASS statuses.
 
 The original bootstrap checks have been migrated into a shared typed rule registry; the compatibility entrypoint runs this single implementation. New checks must join that registry rather than introducing a competing auditor.

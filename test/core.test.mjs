@@ -48,7 +48,7 @@ test('disabled rules are omitted, not silently marked as passing', async (t) => 
   await configFile(root, 'schema: 1\nrules:\n  repo.license-present:\n    enabled: false\n');
   const report = await runAudit(root);
   assert.equal(get(report, 'repo.license-present'), undefined);
-  assert.equal(report.findings.length, 7);
+  assert.equal(report.findings.length, 12);
 });
 
 test('symlinked configuration is refused', async (t) => {

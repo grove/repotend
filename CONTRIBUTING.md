@@ -11,15 +11,17 @@ Thanks for helping maintain small open-source repositories. We welcome bug repor
 
 ## Development
 
-The initial TypeScript rules engine runs using built-in Node.js type stripping; it has **no third-party runtime dependencies** and requires Node.js 22.16 or later.
+The experimental self-audit requires Node.js 22.16+ and installs its small, pinned dependency set using npm.
 
 ```sh
+npm ci
+npm run typecheck
 npm test
 node skills/repotend/scripts/audit.mjs --format markdown
 node skills/repotend/scripts/audit.mjs --format json
 ```
 
-Static audit never runs target-repository code or changes files. This is the first reusable engine slice, not the completed v0.1 rule set. See [configuration](docs/CONFIGURATION.md).
+Static audit never runs target-repository code or changes files. The current engine contains basic static checks, not the complete v0.1 feature set. See [workflow check limitations](docs/WORKFLOW_CHECKS.md).
 
 When implementing rules, add positive, negative, and ambiguous fixtures. Never confuse a missing capability with a PASS. Describe limitations in the resulting finding.
 
