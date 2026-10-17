@@ -1,0 +1,126 @@
+# One-time release workflow. Remove after publication.
+# The fixed SHA is PR #10's reviewed, successfully tested merge commit.
+name: Publish RepoTend v0.1.0
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/publish-v0.1.0.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repotend-publish-v0.1.0
+  cancel-in-progress: false
+
+env:
+  RELEASE_SHA: 37fd2e2f8b525e24d4e6ac26a0e8f021c3bf4f6e
+  RELEASE_TAG: v0.1.0
+
+jobs:
+  verify:
+    name: Verify exact release candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out reviewed commit, without write credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: 37fd2e2f8b525e24d4e6ac26a0e8f021c3bf4f6e
+          persist-credentials: false
+      - name: Verify checked-out revision
+        run: test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install pinned dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Formatting
+        run: npm run format:check
+      - name: Lint and TypeScript
+        run: npm run lint
+      - name: Unit and installation tests
+        run: npm test
+      - name: Release preflight
+        run: npm run release:check
+      - name: Self-audit
+        run: npm run audit
+      - name: Verify no self-remediation proposal
+        run: npm run remediate
+      - name: Read-only pinned external audits
+        run: npm run validate:external
+      - name: Clean consumer skill install smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$(mktemp -d)"
+          trap 'rm -rf "$root"' EXIT
+          mkdir -p "$root/consumer"
+          node scripts/install-skill.mjs --dest "$root/copilot-skills/repotend"
+          node "$root/copilot-skills/repotend/scripts/audit.mjs" --root "$root/consumer" --format json > "$root/audit.json"
+          node -e 'const r=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));if(r.toolVersion!=="0.1.0"||r.findings.length!==13||r.errors.length!==0)process.exit(1)' "$root/audit.json"
+
+  publish:
+    name: Tag approved SHA and publish GitHub Release
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Check out approved release revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: 37fd2e2f8b525e24d4e6ac26a0e8f021c3bf4f6e
+          fetch-depth: 0
+      - name: Validate exact revision and tag preconditions
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          if git ls-remote --tags origin "refs/tags/$RELEASE_TAG" | grep -q .; then
+            git fetch origin "refs/tags/$RELEASE_TAG:refs/tags/$RELEASE_TAG"
+            test "$(git rev-parse "$RELEASE_TAG^{commit}")" = "$RELEASE_SHA"
+            echo "Existing tag resolves to the approved release commit."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a "$RELEASE_TAG" "$RELEASE_SHA" -m "RepoTend v0.1.0"
+            git push origin "refs/tags/$RELEASE_TAG"
+          fi
+          test "$(git rev-parse "$RELEASE_TAG^{commit}")" = "$RELEASE_SHA"
+      - name: Verify published tagged JSON Schemas
+        shell: bash
+        run: |
+          set -euo pipefail
+          for schema in report remediation; do
+            url="https://raw.githubusercontent.com/grove/repotend/v0.1.0/schemas/$schema.schema.json"
+            curl --fail --location --silent --show-error --retry 8 --retry-delay 3 --retry-all-errors \
+              --output "$RUNNER_TEMP/$schema.schema.json" "$url"
+          done
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          for (const name of ['report', 'remediation']) {
+            const data = JSON.parse(readFileSync(process.env.RUNNER_TEMP + '/' + name + '.schema.json', 'utf8'));
+            const expected = 'https://raw.githubusercontent.com/grove/repotend/v0.1.0/schemas/' + name + '.schema.json';
+            if (data.$id !== expected) throw new Error('Tag schema mismatch: ' + name);
+          }
+          NODE
+      - name: Publish GitHub Release if not already present
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release already exists for $RELEASE_TAG; not replacing it."
+          else
+            gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+              --verify-tag --title "RepoTend v0.1.0" \
+              --notes-file docs/RELEASE_NOTES_V0.1.0.md
+          fi
+          gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json url,tagName,name,isDraft,isPrerelease
