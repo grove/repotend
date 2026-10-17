@@ -13,7 +13,10 @@
     "audit:json": "node skills/repotend/scripts/audit.mjs --format json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "validate:external": "node scripts/validate-external.mjs",
-    "remediate": "node skills/repotend/scripts/remediate.mjs"
+    "remediate": "node skills/repotend/scripts/remediate.mjs",
+    "format": "node scripts/check-style.mjs --write",
+    "format:check": "node scripts/check-style.mjs",
+    "lint": "node scripts/lint.mjs && npm run typecheck"
   },
   "dependencies": {
     "yaml": "2.8.1"

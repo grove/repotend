@@ -31,13 +31,14 @@ Node.js **22.16+** is required for built-in TypeScript stripping. Install the pi
 
 ```sh
 npm ci --ignore-scripts
-npm run typecheck
+npm run format:check
+npm run lint
 npm test
 node skills/repotend/scripts/audit.mjs --format markdown
 node skills/repotend/scripts/audit.mjs --format json
 ```
 
-For a different repository, pass `--root /path/to/repository`. [Installation instructions](docs/INSTALLATION.md) cover a separate consumer checkout and local Agent Skill setup. The skill lives at [skills/repotend/SKILL.md](skills/repotend/SKILL.md). See [dogfooding policy and limitations](docs/DOGFOODING.md). The default `small-oss` profile is advisory. The optional [`.repotend.yml` configuration](docs/CONFIGURATION.md) can disable checks or enforce individual verified rules. See the [configuration guide](docs/CONFIGURATION.md) for supported syntax, statuses, and exit codes. The workflow checks now use a YAML 1.2 parser and include static CI efficiency and security recommendations, but this remains a limited audit, not a complete GitHub Actions semantic validator or security scanner.
+For a different repository, pass `--root /path/to/repository`. [Installation instructions](docs/INSTALLATION.md) cover a separate consumer checkout and local Agent Skill setup. The skill lives at [skills/repotend/SKILL.md](skills/repotend/SKILL.md). See [dogfooding policy and limitations](docs/DOGFOODING.md). The default `small-oss` profile is advisory. The optional [`.repotend.yml` configuration](docs/CONFIGURATION.md) can disable checks, enforce objective rules, or document exceptions with a reason and optional expiry. Suppressed findings remain visible rather than becoming PASS. See the [configuration guide](docs/CONFIGURATION.md) for supported syntax, statuses, and exit codes. The workflow checks now use a YAML 1.2 parser and include static CI efficiency and security recommendations, but this remains a limited audit, not a complete GitHub Actions semantic validator or security scanner.
 
 ### Experimental safe remediation (available now)
 
@@ -102,7 +103,10 @@ The roadmap is intentionally incremental: working checks should arrive before a 
 - [Reviewable remediation](docs/REMEDIATION.md) — preview-only by default, explicit apply, and two supported file additions.
 - [Implementation plan](docs/IMPLEMENTATION_PLAN.md) — milestones, initial rule backlog, acceptance criteria, and non-goals.
 - [Dogfooding](docs/DOGFOODING.md) — current self-audit rules and their limitations.
-- [Configuration](docs/CONFIGURATION.md) — supported policy syntax, enforcement, and exit codes.
+- [Configuration](docs/CONFIGURATION.md) — supported policy syntax, enforcement, and documented suppressions.
+- [Rule catalog](docs/RULE_CATALOG.md) — the 13 current rules, applicability, and limitations.
+- [Report contract](docs/REPORT_CONTRACT.md) — versioned JSON Schemas for audit and remediation.
+- [Release checklist](docs/RELEASE_CHECKLIST.md) — outstanding v0.1 release acceptance gates.
 - [GitHub Actions checks](docs/WORKFLOW_CHECKS.md) — scope, evidence, and limitations of workflow analysis.
 - [Installation and local skill setup](docs/INSTALLATION.md) — clean consumer setup, supported paths, and privacy limitations.
 - [External validation](docs/EXTERNAL_VALIDATION.md) — pinned public repository audits, regression findings, and known gaps.

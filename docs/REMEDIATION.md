@@ -9,7 +9,7 @@ RepoTend can propose **two deliberately limited, deterministic file additions** 
 
 The PR template has short sections for motivation, changes, testing, and related issues. The EditorConfig sets `charset`, line endings, and final-newline behavior but **does not impose an indentation size or style**. These are starting points for human review, not mandatory policies.
 
-No fix is proposed when the check is `PASS`, `UNKNOWN`, `NOT_APPLICABLE`, disabled, or heuristic. A verified `FAIL` from explicitly opted-in enforcement can be eligible for a fix. Other checks, including license, workflow security, and CI efficiency, remain advice-only.
+No fix is proposed when the check is `PASS`, `UNKNOWN`, `NOT_APPLICABLE`, `SUPPRESSED`, disabled, or heuristic. A verified `FAIL` from explicitly opted-in enforcement can be eligible for a fix. Other checks, including license, workflow security, and CI efficiency, remain advice-only.
 
 ## Preview by default
 

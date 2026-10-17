@@ -42,7 +42,7 @@ For detailed workflow check behavior, see [WORKFLOW_CHECKS.md](WORKFLOW_CHECKS.m
 ## Dogfooding contract
 
 1. **Each new rule must run on this repository.** Add fixtures for passing, warning, unknown, not-applicable, and hostile inputs as relevant.
-2. **Do not hide warnings.** Address genuinely useful findings or document why the recommendation is not applicable. Enforcement is opt-in for verified rules; an explicit suppression format remains a later milestone.
+2. **Do not hide warnings.** Address genuinely useful findings or document why the recommendation is not applicable. Enforcement is opt-in for verified rules; suppressed exceptions require a reason and optional expiry and remain visible in the report (they are not PASS).
 3. **Do not reward empty checklists.** A check must show evidence; a PASS is limited to what it actually tested.
 4. **Don't weaken CI to improve the score.** Never skip required workflows via risky path filters or remove tests to achieve faster builds.
 5. **Measure before claiming improvements.** Estimated CI savings or test-quality improvements must be distinguished from observed results.
@@ -50,9 +50,9 @@ For detailed workflow check behavior, see [WORKFLOW_CHECKS.md](WORKFLOW_CHECKS.m
 
 ## Known gaps and next steps
 
-This first engine slice now supports a small, strictly validated [`.repotend.yml` subset](CONFIGURATION.md), deterministic reports, and rule-level opt-in enforcement for objective checks. It now implements a limited YAML-aware GitHub Actions analysis, but does **not** implement full actionlint expression validation, generic autofixes, API-based checks, or the full rule catalog from [DESIGN.md](DESIGN.md). A [narrow remediation feature](REMEDIATION.md) can preview and, only with a reviewed plan ID, add two missing files. Default results remain informational. Track these gaps through the [implementation plan](IMPLEMENTATION_PLAN.md), not through misleading PASS statuses.
+This first engine slice now supports a small, strictly validated [`.repotend.yml` subset](CONFIGURATION.md), deterministic reports, and rule-level opt-in enforcement for objective checks. It now implements a limited YAML-aware GitHub Actions analysis, but does **not** implement full actionlint expression validation, generic autofixes, API-based checks, or advanced architectural and testing analysis deferred in [DESIGN.md](DESIGN.md). A [narrow remediation feature](REMEDIATION.md) can preview and, only with a reviewed plan ID, add two missing files. Default results remain informational. Track these gaps through the [implementation plan](IMPLEMENTATION_PLAN.md), not through misleading PASS statuses.
 
-The default self-audit CI also generates the **read-only remediation preview**, ensuring RepoTend does not write into itself during automated checks.
+The default self-audit CI also checks basic formatting, linting, and the versioned report contract. It generates the **read-only remediation preview**, ensuring RepoTend does not write into itself during automated checks.
 
 Installation tests build a complete copied skill in a temporary directory, remove the source checkout, and run audit/preview/reviewed apply from a separate consumer workspace. They check exact changed contents, stale/repeat-plan refusal, and missing/corrupt setup. No live LLM or agent credentials are used in CI. See [agent validation](AGENT_VALIDATION.md) for opt-in Copilot CLI evidence, actual human-approved remediation, and remaining host/platform limitations.
 

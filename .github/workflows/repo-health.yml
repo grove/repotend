@@ -27,8 +27,10 @@ jobs:
           cache: 'npm'
       - name: Install pinned dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Type-check rules
-        run: npm run typecheck
+      - name: Check formatting
+        run: npm run format:check
+      - name: Lint and type-check rules
+        run: npm run lint
       - name: Run audit tests
         run: npm test
       - name: Dogfood RepoTend (advisory)
@@ -54,6 +56,4 @@ jobs:
       - name: Install pinned RepoTend dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Audit pinned public repositories (no target code execution)
-        run: |
-          set -o pipefail
-          npm run validate:external | tee -a "$GITHUB_STEP_SUMMARY"
+        run: npm run validate:external >> "$GITHUB_STEP_SUMMARY"

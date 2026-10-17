@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/grove/repotend/v0.1.0/schemas/remediation.schema.json",
+  "title": "RepoTend remediation results v0.1",
+  "description": "Dry-run proposals and approved apply outcomes. Both use schemaVersion 0.1.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/plan"
+    },
+    {
+      "$ref": "#/$defs/outcome"
+    }
+  ],
+  "$defs": {
+    "plan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "mode",
+        "planId",
+        "proposals"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "mode": {
+          "const": "remediate"
+        },
+        "planId": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "proposals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/proposal"
+          }
+        }
+      }
+    },
+    "proposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ruleId",
+        "path",
+        "reason",
+        "content",
+        "diff"
+      ],
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content": {
+          "type": "string"
+        },
+        "diff": {
+          "type": "string"
+        }
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "mode",
+        "planId",
+        "changed",
+        "verified"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "0.1"
+        },
+        "mode": {
+          "const": "apply"
+        },
+        "planId": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "changed": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "verified": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/verification"
+          }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ruleId",
+        "status"
+      ],
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "PASS",
+            "WARN",
+            "FAIL",
+            "UNKNOWN",
+            "NOT_APPLICABLE",
+            "SUPPRESSED"
+          ]
+        }
+      }
+    }
+  }
+}
