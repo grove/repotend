@@ -30,14 +30,14 @@ RepoTend's planned workflow is **audit → explain → propose → fix → verif
 Node.js **22.16+** is required for built-in TypeScript stripping. Install the pinned dependencies before running audits:
 
 ```sh
-npm ci
+npm ci --ignore-scripts
 npm run typecheck
 npm test
 node skills/repotend/scripts/audit.mjs --format markdown
 node skills/repotend/scripts/audit.mjs --format json
 ```
 
-For a different repository, pass `--root /path/to/repository`. The skill lives at [skills/repotend/SKILL.md](skills/repotend/SKILL.md). See [dogfooding policy and limitations](docs/DOGFOODING.md). The default `small-oss` profile is advisory. The optional [`.repotend.yml` configuration](docs/CONFIGURATION.md) can disable checks or enforce individual verified rules. See the [configuration guide](docs/CONFIGURATION.md) for supported syntax, statuses, and exit codes. The workflow checks now use a YAML 1.2 parser and include static CI efficiency and security recommendations, but this remains a limited audit, not a complete GitHub Actions semantic validator or security scanner.
+For a different repository, pass `--root /path/to/repository`. [Installation instructions](docs/INSTALLATION.md) cover a separate consumer checkout and local Agent Skill setup. The skill lives at [skills/repotend/SKILL.md](skills/repotend/SKILL.md). See [dogfooding policy and limitations](docs/DOGFOODING.md). The default `small-oss` profile is advisory. The optional [`.repotend.yml` configuration](docs/CONFIGURATION.md) can disable checks or enforce individual verified rules. See the [configuration guide](docs/CONFIGURATION.md) for supported syntax, statuses, and exit codes. The workflow checks now use a YAML 1.2 parser and include static CI efficiency and security recommendations, but this remains a limited audit, not a complete GitHub Actions semantic validator or security scanner.
 
 ### Planned agent experience
 
@@ -45,7 +45,7 @@ After installing the skill in a compatible agent, a maintainer could ask:
 
 > Audit this repository with RepoTend. Explain the three highest-value improvements, and prepare a patch for the ones that are safe to apply.
 
-The experimental skill can invoke the bundled validator; its compatibility with specific agent hosts still requires validation. A standalone CLI and a reusable GitHub Action are possible later interfaces; they are **not** v0.1 prerequisites.
+The experimental skill can invoke the bundled validator via a local symlink; its automatic discovery and responses inside specific agent hosts still require validation. A standalone CLI and a reusable GitHub Action are possible later interfaces; they are **not** v0.1 prerequisites.
 
 ## Principles
 
@@ -86,6 +86,8 @@ The roadmap is intentionally incremental: working checks should arrive before a 
 - [Dogfooding](docs/DOGFOODING.md) — current self-audit rules and their limitations.
 - [Configuration](docs/CONFIGURATION.md) — supported policy syntax, enforcement, and exit codes.
 - [GitHub Actions checks](docs/WORKFLOW_CHECKS.md) — scope, evidence, and limitations of workflow analysis.
+- [Installation and local skill setup](docs/INSTALLATION.md) — clean consumer setup, supported paths, and privacy limitations.
+- [External validation](docs/EXTERNAL_VALIDATION.md) — pinned public repository audits, regression findings, and known gaps.
 
 ## Contributing
 
