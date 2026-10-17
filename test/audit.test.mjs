@@ -67,3 +67,13 @@ test('issue-form config by itself does not count as an issue template', async (t
   const report = await runAudit(root);
   assert.equal(status(report, 'repo.issue-templates'), 'WARN');
 });
+
+test('symlinked parent directories are not traversed', async (t) => {
+  const root = await fixture(t);
+  const external = await fixture(t);
+  await put(external, 'workflows/other.yml', 'permissions: write-all\n');
+  await symlink(external, join(root, '.github'));
+  const report = await runAudit(root);
+  assert.equal(status(report, 'repo.pr-template'), 'UNKNOWN');
+  assert.equal(status(report, 'security.workflow-permissions'), 'UNKNOWN');
+});
