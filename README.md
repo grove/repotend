@@ -2,7 +2,7 @@
 
 **A little help keeping your GitHub projects in good shape.**
 
-You know the small things that are easy to put off? Writing a contribution guide. Adding a pull request template. Checking whether your GitHub Actions workflows run more often than they need to.
+You know the small things that are easy to put off? Writing a contribution guide. Adding a pull request template. Checking whether GitHub's automatic tests run more often than they need to.
 
 RepoTend helps you notice them.
 
@@ -75,7 +75,7 @@ RepoTend currently has **13 small checks** covering:
 
 - **The basics:** things like a license, contribution guidance, and issue or pull request templates.
 - **GitHub Actions:** basic workflow structure, possible duplicate runs, and opportunities to avoid unnecessary work.
-- **Security-related clues:** workflow permissions and whether external actions use fixed versions.
+- **Security-related clues:** workflow permissions and whether third-party actions are pinned to a specific version of their code.
 - **Everyday development:** whether the project has an `.editorconfig` file for shared editor settings.
 
 It only looks at local files and workflows. It can't see GitHub organization settings, measure actual CI savings, find bugs in your source code, or tell you that a project is secure. See [exactly what each check does](docs/RULE_CATALOG.md).
