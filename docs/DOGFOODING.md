@@ -54,6 +54,8 @@ This first engine slice now supports a small, strictly validated [`.repotend.yml
 
 The default self-audit CI also generates the **read-only remediation preview**, ensuring RepoTend does not write into itself during automated checks.
 
+Installation tests build a complete copied skill in a temporary directory, remove the source checkout, and run audit/preview/reviewed apply from a separate consumer workspace. They check exact changed contents, stale/repeat-plan refusal, and missing/corrupt setup. No live LLM or agent credentials are used in CI. See [agent validation](AGENT_VALIDATION.md) for opt-in Copilot CLI evidence, actual human-approved remediation, and remaining host/platform limitations.
+
 The original bootstrap checks have been migrated into a shared typed rule registry; the compatibility entrypoint runs this single implementation. New checks must join that registry rather than introducing a competing auditor.
 
 ## External validation

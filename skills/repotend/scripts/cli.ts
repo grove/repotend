@@ -1,7 +1,7 @@
 import process from 'node:process';
-import { runAudit, renderMarkdown } from './engine.ts';
 
 async function main(): Promise<void> {
+  const { runAudit, renderMarkdown } = await import('./engine.ts');
   let root = process.cwd();
   let format: 'json' | 'markdown' = 'markdown';
   const args = process.argv.slice(2);

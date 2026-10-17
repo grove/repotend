@@ -36,6 +36,8 @@ node skills/repotend/scripts/remediate.mjs \
 
 Do not include the angle brackets in the actual command. The agent skill must **request user approval** before invoking this operation. `--apply` without a reviewed ID is an error.
 
+For an installed Copilot skill, use `node "$HOME/.copilot/skills/repotend/scripts/remediate.mjs"` with the same arguments; see the [complete installation walkthrough](INSTALLATION.md). The digest checks content consistency, not human consent. The agent must show the entire preview and wait for explicit approval; denial means it never calls `--apply` or edits files by another route. Host shell permission alone does not approve a remediation plan.
+
 Before any write, RepoTend re-runs the audit and verifies that the plan ID has not changed. It then validates all destination paths, refuses existing files (including symlinks and directories), never follows detected symlinked parent directories, and creates missing files exclusively (`O_EXCL`, plus `O_NOFOLLOW` where supported). It re-audits affected rules and reports `PASS` only when confirmed.
 
 A stale plan (including a destination that appeared since preview) is refused; the preview must be generated and reviewed again. A second apply of the old plan cannot overwrite its files. If the current audit has no supported fixes, its new preview yields an empty plan and applying that plan is a no-op.

@@ -14,7 +14,7 @@
 
 ## Milestones
 
-**Progress note:** Initial contributor files, an advisory self-audit, and a TypeScript rules registry are in place. The engine uses Node.js built-in TypeScript stripping to avoid runtime dependencies. CI now runs TypeScript type-checking and unit tests; format/lint policy and host-level AI skill acceptance still require work. Two pinned independent public repositories are exercised in a separate PR-only integration job. A minimal remediation slice now supports reviewed, exclusive creation of a missing PR template or EditorConfig; full agent-host acceptance and suppressions remain open. The current config reader intentionally accepts a documented subset of YAML rather than all YAML features; see [configuration](CONFIGURATION.md).
+**Progress note:** Initial contributor files, an advisory self-audit, and a TypeScript rules registry are in place. The engine uses Node.js built-in TypeScript stripping and a pinned YAML parser. CI runs TypeScript type-checking and unit tests; format/lint policy still requires work. Two pinned independent public repositories are exercised in a separate PR-only integration job. A minimal remediation slice supports reviewed, exclusive creation of a missing PR template or EditorConfig. A copied skill installer now includes dependencies and docs, with separate-workspace regression tests. Live Copilot CLI discovery, preview, denial, human-approved same-ID apply, and post-apply verification have been observed; [agent validation](AGENT_VALIDATION.md) records the evidence and limitations. Suppressions remain open. The config reader intentionally accepts a documented subset of YAML; see [configuration](CONFIGURATION.md).
 
 
 ### M0 — Repository foundation
@@ -48,6 +48,8 @@ Deliver:
 ### M2 — Portable Agent Skill
 
 **Goal:** deliver the first actual user-facing interface.
+
+**Observed progress:** source-based bootstrap produces a self-contained copied installation with pinned dependencies; tests delete the source checkout and exercise audit, preview, guarded apply, stale/repeat plans, and setup failures from a separate working directory. See [installation](INSTALLATION.md) and [live host evidence and remaining acceptance](AGENT_VALIDATION.md). This milestone is not complete solely because deterministic tests pass.
 
 Deliver:
 - `skills/repotend/SKILL.md` and supporting usage/reference material aligned with Agent Skills.
