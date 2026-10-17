@@ -21,8 +21,8 @@ Node.js 22.16+ is required. An installed skill contains its own `package.json`, 
    node "<skill-directory>/scripts/audit.mjs" --root "<repository-root>" --format json
    ```
 
-2. Use its JSON as the source of truth. Separate findings by `confidence` (`verified` or `heuristic`) and preserve PASS, WARN, FAIL, UNKNOWN, and NOT_APPLICABLE. Explain evidence and limitations; a narrow PASS is not a security verdict. Prioritize useful findings by impact and effort. Consult `docs/WORKFLOW_CHECKS.md` for workflow caveats.
-3. Audit exit codes: 0 means completed without enforced failures (warnings may remain), 1 means explicitly enforced deviations, 2 means execution/configuration failure. A failed invocation or missing/malformed report is **not** a successful audit.
+2. Use its JSON as the source of truth. Separate findings by `confidence` (`verified` or `heuristic`) and preserve PASS, WARN, FAIL, SUPPRESSED, UNKNOWN, and NOT_APPLICABLE. A SUPPRESSED finding is a documented exception, **not** successful compliance; quote its reason and expiry when present, and explain expired exceptions. Explain evidence and limitations; a narrow PASS is not a security verdict. Prioritize useful findings by impact and effort. Consult `docs/WORKFLOW_CHECKS.md` for workflow caveats.
+3. Audit exit codes: 0 means completed without enforced failures (warnings and documented suppressions may remain), 1 means explicitly enforced deviations, 2 means execution/configuration failure. A failed invocation or missing/malformed report is **not** a successful audit.
 
 ## Preview, wait for approval, apply, verify
 

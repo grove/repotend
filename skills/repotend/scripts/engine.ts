@@ -3,14 +3,15 @@ import { resolve, relative, isAbsolute, join, sep } from 'node:path';
 import { loadConfig, type Config } from './config.ts';
 import { workflowRules } from './workflows.ts';
 
-export type Status = 'PASS' | 'WARN' | 'FAIL' | 'UNKNOWN' | 'NOT_APPLICABLE';
+export type Status = 'PASS' | 'WARN' | 'FAIL' | 'UNKNOWN' | 'NOT_APPLICABLE' | 'SUPPRESSED';
 export type Severity = 'info' | 'warning' | 'error';
 export type Confidence = 'verified' | 'heuristic';
 export type Evidence = { path: string; line?: number };
+export type FindingSuppression = { reason: string; expires?: string; active: boolean };
 export type Finding = {
   ruleId: string; ruleVersion: string; status: Status; severity: Severity;
   confidence: Confidence; summary: string; evidence: Evidence[];
-  recommendation: string | null; enforced: boolean;
+  recommendation: string | null; enforced: boolean; suppression?: FindingSuppression;
 };
 export type AuditError = { code: string; ruleId?: string; message: string };
 export type Report = {
@@ -168,7 +169,8 @@ export const rules: readonly Rule[] = Object.freeze([
   ...workflowRules,
 ]);
 
-export async function runAudit(repositoryRoot = process.cwd(), selected: readonly Rule[] = rules): Promise<Report> {
+export async function runAudit(repositoryRoot = process.cwd(), selected: readonly Rule[] = rules, asOfUtc = new Date().toISOString().slice(0, 10)): Promise<Report> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(asOfUtc)) throw new Error('Expected a UTC YYYY-MM-DD audit date');
   const root = await realpath(resolve(repositoryRoot));
   const registry = new Map(selected.map((rule) => [rule.id, rule]));
   if (registry.size !== selected.length) throw new Error('Duplicate rule IDs in registry');
@@ -182,12 +184,22 @@ export async function runAudit(repositoryRoot = process.cwd(), selected: readonl
     try {
       const observed = await rule.check(reader);
       const enforced = overrides?.enforce === true;
+      const exception = config.suppressions[rule.id];
+      // Expiry is inclusive, evaluated using UTC calendar days. An expired
+      // exception is visible but no longer changes the finding or exit code.
+      const suppression = exception ? {
+        reason: exception.reason,
+        ...(exception.expires ? { expires: exception.expires } : {}),
+        active: !exception.expires || asOfUtc <= exception.expires,
+      } : undefined;
+      const status: Status = observed.status === 'WARN' && suppression?.active ? 'SUPPRESSED'
+        : enforced && observed.status === 'WARN' ? 'FAIL' : observed.status;
       findings.push({
-        ruleId: rule.id, ruleVersion: rule.version,
-        status: enforced && observed.status === 'WARN' ? 'FAIL' : observed.status,
+        ruleId: rule.id, ruleVersion: rule.version, status,
         severity: rule.severity, confidence: observed.confidence ?? 'verified',
         summary: observed.summary, evidence: observed.evidence ?? [],
         recommendation: observed.recommendation ?? null, enforced,
+        ...(suppression ? { suppression } : {}),
       });
     } catch {
       errors.push({ code: 'RULE_EXECUTION', ruleId: rule.id, message: 'Rule execution failed' });
@@ -200,14 +212,19 @@ export async function runAudit(repositoryRoot = process.cwd(), selected: readonl
 
 function safeTable(value: string): string { return value.replaceAll('|', '\\|').replace(/[\r\n]/g, ' '); }
 export function renderMarkdown(report: Report): string {
-  const counts = Object.fromEntries(['PASS', 'WARN', 'FAIL', 'UNKNOWN', 'NOT_APPLICABLE'].map((status) =>
+  const counts = Object.fromEntries(['PASS', 'WARN', 'FAIL', 'UNKNOWN', 'NOT_APPLICABLE', 'SUPPRESSED'].map((status) =>
     [status, report.findings.filter((f) => f.status === status).length]));
+  const exceptions = report.findings.filter((f) => f.suppression);
   return [
     '## RepoTend repository audit (experimental)', '',
     '> Checks are advisory unless explicitly enforced. A PASS is not a complete security or quality certification.', '',
-    `**${counts.PASS} passed · ${counts.WARN} warnings · ${counts.FAIL} enforced failures · ${counts.UNKNOWN} unknown · ${counts.NOT_APPLICABLE} not applicable**`, '',
+    `**${counts.PASS} passed · ${counts.WARN} warnings · ${counts.FAIL} enforced failures · ${counts.SUPPRESSED} suppressed · ${counts.UNKNOWN} unknown · ${counts.NOT_APPLICABLE} not applicable**`, '',
     '| Status | Rule | Observation |', '| --- | --- | --- |',
     ...report.findings.map((f) => `| ${f.status} | \`${safeTable(f.ruleId)}\` | ${safeTable(f.summary)} |`),
+    ...(exceptions.length ? ['', '### Configured exceptions', '',
+      '| Rule | State | Expires (UTC) | Reason |', '| --- | --- | --- | --- |',
+      ...exceptions.map((f) => `| \`${safeTable(f.ruleId)}\` | ${f.suppression?.active ? 'Active' : 'Expired'} | ${f.suppression?.expires ?? 'Never'} | ${safeTable(f.suppression?.reason ?? '')} |`),
+    ] : []),
     '', ...report.errors.map((e) => `- ERROR ${safeTable(e.ruleId ?? e.code)}: ${safeTable(e.message)}`),
     'See docs/DOGFOODING.md for check limitations.', '',
   ].join('\n');
