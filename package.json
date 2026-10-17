@@ -12,7 +12,8 @@
     "audit": "node skills/repotend/scripts/audit.mjs --format markdown",
     "audit:json": "node skills/repotend/scripts/audit.mjs --format json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "validate:external": "node scripts/validate-external.mjs"
+    "validate:external": "node scripts/validate-external.mjs",
+    "remediate": "node skills/repotend/scripts/remediate.mjs"
   },
   "dependencies": {
     "yaml": "2.8.1"

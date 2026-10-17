@@ -14,7 +14,7 @@
 
 ## Milestones
 
-**Progress note:** Initial contributor files, an advisory self-audit, and a TypeScript rules registry are in place. The engine uses Node.js built-in TypeScript stripping to avoid runtime dependencies. CI now runs TypeScript type-checking and unit tests; format/lint policy and host-level AI skill acceptance still require work. Two pinned independent public repositories are exercised in a separate PR-only integration job. The current config reader intentionally accepts a documented subset of YAML rather than all YAML features; see [configuration](CONFIGURATION.md).
+**Progress note:** Initial contributor files, an advisory self-audit, and a TypeScript rules registry are in place. The engine uses Node.js built-in TypeScript stripping to avoid runtime dependencies. CI now runs TypeScript type-checking and unit tests; format/lint policy and host-level AI skill acceptance still require work. Two pinned independent public repositories are exercised in a separate PR-only integration job. A minimal remediation slice now supports reviewed, exclusive creation of a missing PR template or EditorConfig; full agent-host acceptance and suppressions remain open. The current config reader intentionally accepts a documented subset of YAML rather than all YAML features; see [configuration](CONFIGURATION.md).
 
 
 ### M0 — Repository foundation
