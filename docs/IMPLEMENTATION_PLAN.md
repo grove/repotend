@@ -1,6 +1,6 @@
 # RepoTend Implementation Plan
 
-**Status:** proposed — work has not started  
+**Status:** implementation underway — initial self-audit and a typed rules engine are implemented; v0.1 is not complete  
 **Target:** a useful, auditable v0.1 rather than a broad rules framework  
 **References:** [README](../README.md) · [Design](DESIGN.md)
 
@@ -13,6 +13,9 @@
 - Develop RepoTend against its own repository alongside at least two differently structured example repos.
 
 ## Milestones
+
+**Progress note:** Initial contributor files, an advisory self-audit, and a TypeScript rules registry are in place. The engine uses Node.js built-in TypeScript stripping to avoid runtime dependencies. Full M0 tooling (format/lint/typecheck in CI) and M1/M2 acceptance criteria still require work. The current config reader intentionally accepts a documented subset of YAML rather than all YAML features; see [configuration](CONFIGURATION.md).
+
 
 ### M0 — Repository foundation
 

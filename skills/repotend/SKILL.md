@@ -9,12 +9,12 @@ Use this skill when asked to assess a repository's health, adopt lightweight ope
 
 ## Scope and limitations
 
-The bundled bootstrap script currently performs **eight narrow checks** for repository conventions, EditorConfig, and explicit GitHub Actions token permissions. It does **not** analyze the test pyramid, optimize CI, validate GitHub settings, or implement enforcement. Read `docs/DOGFOODING.md` in the RepoTend repository for limitations.
+The bundled TypeScript rules engine currently performs **eight narrow checks** for repository conventions, EditorConfig, and explicit GitHub Actions token permissions. It does **not** analyze the test pyramid, optimize CI, or validate GitHub settings. Verified rule failures can be optionally enforced with `.repotend.yml` but audits are advisory by default. Read `docs/DOGFOODING.md` in the RepoTend repository for limitations.
 
 ## Process
 
 1. Identify the target repository root and the location of this skill's directory.
-2. If Node.js 22+ is available, run the bundled script read-only:
+2. If Node.js 22.16+ is available, run the bundled script read-only:
 
    `node <absolute-path-to-skill>/scripts/audit.mjs --root <absolute-path-to-repository> --format json`
 
@@ -32,4 +32,4 @@ The validator works without an AI agent:
 
 `node <absolute-path-to-skill>/scripts/audit.mjs --root <repository-path> --format markdown`
 
-Both formats are **advisory-only** in this bootstrap version. Run `node --test` from the RepoTend repository to test the validator.
+Both formats default to advisory. Explicitly enforced verified deviations exit with status 1, execution/configuration errors exit with 2. Run `npm test` from the RepoTend repository to test the validator. [Configuration reference](../../../docs/CONFIGURATION.md)

@@ -25,6 +25,6 @@ jobs:
         with:
           node-version: '22'
       - name: Run audit tests
-        run: node --test
+        run: npm test
       - name: Dogfood RepoTend (advisory)
         run: node skills/repotend/scripts/audit.mjs --format markdown >> "$GITHUB_STEP_SUMMARY"

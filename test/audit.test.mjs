@@ -3,7 +3,7 @@ import { mkdtemp, mkdir, writeFile, symlink, readdir, rm } from 'node:fs/promise
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { runAudit, renderMarkdown } from '../skills/repotend/scripts/audit.mjs';
+import { runAudit, renderMarkdown } from '../skills/repotend/scripts/engine.ts';
 
 async function fixture(t) {
   const root = await mkdtemp(join(tmpdir(), 'repotend-'));

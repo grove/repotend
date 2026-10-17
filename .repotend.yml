@@ -1,0 +1,3 @@
+# Self-audit: this repository follows the same advisory defaults as consumers.
+schema: 1
+profile: small-oss

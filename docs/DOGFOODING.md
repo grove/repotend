@@ -4,12 +4,12 @@ RepoTend is its own initial reference repository. Every implemented check should
 
 ## Current setup (experimental)
 
-A dependency-free Node.js 22+ script, `skills/repotend/scripts/audit.mjs`, checks eight simple properties. The same script is bundled with `skills/repotend/SKILL.md` and runs in `.github/workflows/repo-health.yml` on PRs and default-branch pushes. `node --test` exercises the auditor with fixture repositories.
+The dependency-free Node.js 22.16+ TypeScript rules engine, invoked through `skills/repotend/scripts/audit.mjs`, checks eight simple properties. The same script is bundled with `skills/repotend/SKILL.md` and runs in `.github/workflows/repo-health.yml` on PRs and default-branch pushes. `npm test` exercises the auditor with fixture repositories.
 
 Run locally:
 
 ```sh
-node --test
+npm test
 node skills/repotend/scripts/audit.mjs --format markdown
 node skills/repotend/scripts/audit.mjs --format json
 ```
@@ -29,7 +29,7 @@ The workflow appends a summary to GitHub Actions. **Warnings do not block merges
 | `dx.editorconfig` | .editorconfig exists | Does not verify formatter consistency |
 | `security.workflow-permissions` | Each YAML workflow contains a permissions stanza | Textual heuristic; not a least-privilege/security verdict |
 
-The script only inspects local, regular files and never runs target-repository commands. Symlinks and unreadable files are treated as unknown where detectable. No GitHub API or LLM is needed for validation.
+The rules engine only inspects local, regular files and never runs target-repository commands. Symlinks and unreadable files are treated as unknown where detectable. No GitHub API or LLM is needed for validation.
 
 ## Dogfooding contract
 
@@ -42,6 +42,6 @@ The script only inspects local, regular files and never runs target-repository c
 
 ## Known gaps and next steps
 
-This bootstrap slice does not implement the full TypeScript rule engine, `.repotend.yml` schema, advanced GitHub Actions parsing, safe autofixes, API-based checks, or opt-in enforcement from [DESIGN.md](DESIGN.md). Its results are informational. Track these gaps through the [implementation plan](IMPLEMENTATION_PLAN.md), not through misleading PASS statuses.
+This first engine slice now supports a small, strictly validated [`.repotend.yml` subset](CONFIGURATION.md), deterministic reports, and rule-level opt-in enforcement for objective checks. It does **not** implement advanced GitHub Actions parsing, safe autofixes, API-based checks, or the full rule catalog from [DESIGN.md](DESIGN.md). Default results remain informational. Track these gaps through the [implementation plan](IMPLEMENTATION_PLAN.md), not through misleading PASS statuses.
 
-Once the proper rules engine exists, replace the bootstrap checks with the shared validator and retain the same self-audit workflow. Avoid maintaining two competing implementations.
+The original bootstrap checks have been migrated into a shared typed rule registry; the compatibility entrypoint runs this single implementation. New checks must join that registry rather than introducing a competing auditor.
