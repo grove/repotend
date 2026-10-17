@@ -1,0 +1,27 @@
+name: Improvement or rule proposal
+description: Suggest a small, evidence-based improvement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Maintainer problem
+      description: Which recurring source of maintenance effort or risk does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Suggested behavior
+      description: Explain the check, report, or workflow you would add.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Verifiability and false positives
+      description: What facts would RepoTend inspect? When should it skip or say UNKNOWN?
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and complexity
+      description: Could an existing tool solve the problem more simply?
