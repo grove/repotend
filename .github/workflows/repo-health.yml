@@ -52,4 +52,6 @@ jobs:
       - name: Install pinned RepoTend dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Audit pinned public repositories (no target code execution)
-        run: npm run validate:external >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          set -o pipefail
+          npm run validate:external | tee -a "$GITHUB_STEP_SUMMARY"
