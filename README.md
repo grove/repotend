@@ -1,34 +1,38 @@
 # RepoTend
 
-**A friendly checkup for small GitHub repositories.**
+**A little help keeping your GitHub projects in good shape.**
 
-RepoTend looks through a local copy of your GitHub project and points out small maintenance tasks worth considering. Think of it as **a helpful checklist, not a report card**.
+You know the small things that are easy to put off? Writing a contribution guide. Adding a pull request template. Checking whether your GitHub Actions workflows run more often than they need to.
 
-Maybe you are missing a pull request template. Maybe a GitHub Actions workflow could run twice for the same change. RepoTend shows what it found, explains what it means, and leaves the decisions to you.
+RepoTend helps you notice them.
 
-**No dashboard, GitHub token, or AI account is needed to run an audit.**
+It looks at a repository on your computer and gives you a readable report: what's already in place, what might be missing, and what could be worth a closer look. It's made for small projects and the people looking after them.
 
-> **Project status: v0.1.0 (experimental).** RepoTend currently has 13 focused checks, readable reports, and two optional, carefully controlled fixes. It is not a complete security or code-quality scanner.
+**An audit doesn't change anything.** You don't need an AI assistant, a GitHub token, or a hosted service to run one.
 
-[Try it](#try-it-in-a-few-minutes) · [See use cases](#when-is-repotend-useful) · [Explore the guides](#guides-and-reference)
+> **Early days:** RepoTend v0.1.0 is experimental. It's a helpful checklist, not a security certification or a score for your code.
 
-## When is RepoTend useful?
+## Here's an example
 
-| You want to… | RepoTend helps you… |
-| --- | --- |
-| **Get a new project ready for contributors** | Spot missing contribution instructions, community policies, and issue or PR templates. |
-| **Tidy up an older repository** | Get a quick inventory of common maintenance gaps without setting up a big toolchain. |
-| **Review GitHub Actions** | Notice possible duplicate runs, missing concurrency settings, and risky workflow patterns. |
-| **Make a project easier to work on** | Check for simple shared conventions, such as an EditorConfig file. |
-| **Ask an AI assistant for help** | Give GitHub Copilot CLI a repeatable audit to explain, instead of relying on guesses. |
+Imagine you're about to invite people to contribute to a side project. RepoTend might notice:
 
-RepoTend is designed for solo maintainers and small open-source teams. You can use it on an existing project without adopting a new development process.
+- **There's a license file.** Great — one less thing to think about.
+- **There's no pull request template.** A short template could help contributors explain their changes.
+- **Your GitHub Actions workflows might run twice for one change.** Worth checking, but the two runs could be intentional.
 
-## Try it in a few minutes
+These are *examples*, not results from your project. RepoTend won't insist you fix every warning. You might have good reasons for doing things differently.
 
-You need **Git, npm, and Node.js 22.16 or newer**. The commands below are for macOS/Linux; on Windows, use WSL (native Windows has not been validated).
+### When does that help?
 
-**1. Download RepoTend into its own folder.**
+- **Before sharing a project:** see whether new contributors have the basics they need.
+- **When you return to an old repository:** get a quick reminder of the maintenance tasks you may have forgotten.
+- **When GitHub Actions gets complicated:** find possible workflow issues to investigate, without blindly changing your CI.
+
+## Give it a try
+
+You'll need **Git, npm, and Node.js 22.16 or newer**. These commands work on macOS and Linux; on Windows, use WSL (native Windows hasn't been validated).
+
+**1. Get RepoTend.** Keep it in its own folder, separate from the project you want to check.
 
 ```sh
 git clone https://github.com/grove/repotend.git
@@ -36,124 +40,68 @@ cd repotend
 npm ci --ignore-scripts
 ```
 
-**2. Point it at a local project you want to check.**
+**2. See it in action.** This checks RepoTend's own repository, so you can try it without setting anything else up:
 
 ```sh
-node skills/repotend/scripts/audit.mjs --root "/absolute/path/to/your-project" --format markdown
+npm run audit
 ```
 
-Replace `/absolute/path/to/your-project` with the actual folder containing your project. Run this command **from the RepoTend folder**, not from the project being checked. RepoTend reads that project; it does not install anything in it or run its code.
+You'll see a summary and a table of findings.
 
-You'll get a short summary followed by a table of findings. **Nothing is changed.** For a report that other tools can process, use `--format json` instead.
-
-Want a slower, step-by-step walkthrough? See [Getting started](docs/GETTING_STARTED.md).
-
-## What does it check?
-
-RepoTend currently looks for 13 specific things across four areas:
-
-| Area | Examples |
-| --- | --- |
-| **Project basics** | License, contribution guidance, code of conduct, security policy, issue and PR templates. |
-| **GitHub Actions setup** | Basic workflow YAML/structure, possible duplicate triggers, and cancellation settings. |
-| **Workflow security signals** | Token permissions, external actions using changeable version references, and potentially risky path filters. |
-| **Developer experience** | Whether an `.editorconfig` file exists to share a few basic editor conventions. |
-
-These are **focused checks, not judgments about the whole project**. For instance, finding a license file does not prove its terms are correct. A warning about duplicate workflow runs does not mean both runs are unnecessary.
-
-The [rule catalog](docs/RULE_CATALOG.md) explains all 13 checks and where they can be wrong.
-
-## What do the results mean?
-
-- **PASS** — this particular check found what it was looking for.
-- **WARN** — something to look into; it might be intentional.
-- **UNKNOWN** — RepoTend couldn't reliably tell.
-- **NOT_APPLICABLE** — the check doesn't fit this repository (for example, workflow checks when there are no workflows).
-- **FAIL** — a verified issue in a rule you *chose* to enforce.
-- **SUPPRESSED** — a warning or failure you have explicitly documented as an exception; it stays visible.
-
-**Warnings do not fail the audit by default.** Look at them, decide which are useful, and ignore or document the ones that don't apply to your situation.
-
-[Understanding your results](docs/UNDERSTANDING_RESULTS.md) shows how to interpret the report, decide what to fix, and distinguish evidence from suggestions.
-
-## Can it fix anything?
-
-A little — and **only with your approval**.
-
-Today, RepoTend can propose adding two missing files:
-
-- `.github/pull_request_template.md` — a basic template for pull requests.
-- `.editorconfig` — a minimal set of editor conventions.
-
-To **preview** the proposed additions:
+**3. Check your project.** Still in the `repotend` folder, run:
 
 ```sh
-node skills/repotend/scripts/remediate.mjs --root "/absolute/path/to/your-project"
+node skills/repotend/scripts/audit.mjs --root "/full/path/to/your-project"
 ```
 
-This command is read-only. It shows the complete changes and a plan ID. Applying a plan is a **separate** step that requires you to review the changes and supply that exact plan ID. RepoTend will not overwrite existing files or automatically fix workflows.
+Replace the sample path with your project's folder. Not sure what its path is? Open a terminal in that folder and run `pwd`.
 
-See [Safe, reviewable fixes](docs/REMEDIATION.md) before applying anything.
+That's it. RepoTend reads the project's files; it doesn't run its code, install anything in it, or make changes. For help with each step, see [Your first audit](docs/GETTING_STARTED.md).
 
-## Prefer to use GitHub Copilot CLI?
+## What will it tell me?
 
-RepoTend also works as an optional **Copilot Agent Skill**. The regular audit works without AI; the skill helps Copilot run that same audit and explain the findings in plain language.
+Each check has a result. The two you'll see most often are:
 
-From the RepoTend checkout:
+- **PASS** — RepoTend found what it was checking for.
+- **WARN** — something is worth a look. It might be perfectly fine as it is.
+
+If RepoTend can't tell, it says **UNKNOWN** rather than guessing. A warning doesn't make the audit fail unless you've explicitly chosen to enforce that particular rule.
+
+[How to read your results](docs/UNDERSTANDING_RESULTS.md) has examples and explains the other results.
+
+### What's on the checklist?
+
+RepoTend currently has **13 small checks** covering:
+
+- **The basics:** things like a license, contribution guidance, and issue or pull request templates.
+- **GitHub Actions:** basic workflow structure, possible duplicate runs, and opportunities to avoid unnecessary work.
+- **Security-related clues:** workflow permissions and whether external actions use fixed versions.
+- **Everyday development:** whether the project has an `.editorconfig` file for shared editor settings.
+
+It only looks at local files and workflows. It can't see GitHub organization settings, measure actual CI savings, find bugs in your source code, or tell you that a project is secure. See [exactly what each check does](docs/RULE_CATALOG.md).
+
+## What if I want to act on a suggestion?
+
+**You choose what happens next.** Most findings are advice for you to consider.
+
+RepoTend can also **preview** two small additions: a missing pull request template or a basic `.editorconfig` file.
 
 ```sh
-node scripts/install-skill.mjs --dest "$HOME/.copilot/skills/repotend"
+node skills/repotend/scripts/remediate.mjs --root "/full/path/to/your-project"
 ```
 
-Then start a **new, authenticated Copilot CLI session** in the project you want to check and ask:
+This only shows you the proposed changes. To apply them, you must review the full diff and explicitly supply its matching plan ID in a separate command. RepoTend won't overwrite an existing file. [Read how safe fixes work](docs/REMEDIATION.md).
 
-> Audit this repository with RepoTend. Explain verified findings separately from suggestions. Do not change any files.
+If you use **GitHub Copilot CLI**, you can [install RepoTend as a skill](docs/INSTALLATION.md) and ask Copilot to run the same audit and explain the findings. The audit itself does not need AI. Be aware that Copilot may send repository content to its model provider.
 
-The installer makes a separate copy of the skill and its runtime dependency. It will refuse to replace an existing installation. For setup, updating, troubleshooting, and approval examples, see the [Copilot CLI installation guide](docs/INSTALLATION.md).
+You can also [choose which checks matter to your project](docs/CONFIGURATION.md). Everything is advisory until you opt in to enforcement.
 
-**Privacy note:** The standalone validator analyzes local files without uploading them or calling an AI service. If you use Copilot, your Copilot host may send repository content to its configured model provider; check its privacy settings first.
+## Find your way around
 
-## Make it fit your project
+**New here?** Start with [Your first audit](docs/GETTING_STARTED.md) and [Understanding your results](docs/UNDERSTANDING_RESULTS.md).
 
-You don't need a configuration file. The default `small-oss` profile makes all checks **advisory**.
+**Want the details?** See the [rule catalog](docs/RULE_CATALOG.md), [configuration](docs/CONFIGURATION.md), [safe fixes](docs/REMEDIATION.md), and [Copilot CLI setup](docs/INSTALLATION.md).
 
-If you want to enforce a specific objective rule, create `.repotend.yml` in the project being checked:
+**Want to help?** Bugs, suggestions, and small improvements are welcome. Read [Contributing](CONTRIBUTING.md), follow the [Code of Conduct](CODE_OF_CONDUCT.md), and report vulnerabilities through [the security policy](SECURITY.md), not a public issue.
 
-```yaml
-schema: 1
-profile: small-oss
-rules:
-  repo.license-present:
-    enforce: true
-```
-
-Now a missing license causes a `FAIL` and an audit exit code of `1`. You can also disable checks or record a justified exception, with an optional expiry date. See the [configuration guide](docs/CONFIGURATION.md) for the supported syntax and limits.
-
-## What RepoTend doesn't do (yet)
-
-RepoTend deliberately keeps its first release small:
-
-- It **doesn't run** the checked project's builds, tests, or other scripts.
-- It **doesn't check** live GitHub settings or organization-wide defaults.
-- It **doesn't certify** your repository as secure, measure actual CI savings, or score the quality of your code.
-- It **doesn't automatically edit** existing files, workflows, or GitHub settings.
-
-The audit and fix preview are read-only. Those boundaries are intentional: suggestions should be easy to understand before anyone acts on them.
-
-## Guides and reference
-
-- **[Getting started](docs/GETTING_STARTED.md)** — your first audit, one step at a time.
-- **[Understanding results](docs/UNDERSTANDING_RESULTS.md)** — statuses, evidence, exit codes, and next steps.
-- [All 13 rules](docs/RULE_CATALOG.md) — exactly what each check does.
-- [Configuration](docs/CONFIGURATION.md) — optional enforcement and documented exceptions.
-- [Safe fixes](docs/REMEDIATION.md) — review, approval, and verification.
-- [Copilot CLI setup](docs/INSTALLATION.md) — installation, updates, and troubleshooting.
-- [Technical design](docs/DESIGN.md) · [Changelog](CHANGELOG.md) · [Release notes](docs/RELEASE_NOTES_V0.1.0.md)
-
-## Help make RepoTend better
-
-Have an example of a repository check that would save you time? Suggestions, bug reports, and documentation improvements are welcome — especially ones that keep maintenance simple for small projects.
-
-Start with [CONTRIBUTING.md](CONTRIBUTING.md), and please follow the [Code of Conduct](CODE_OF_CONDUCT.md). For security reports, use the private process described in [SECURITY.md](SECURITY.md), not a public issue.
-
-RepoTend is open source under the [Apache License 2.0](LICENSE).
+RepoTend is open source under the [Apache 2.0 license](LICENSE).
