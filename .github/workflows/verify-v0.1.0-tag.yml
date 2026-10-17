@@ -1,0 +1,39 @@
+# One-time post-release audit of the exact published tag.
+name: Verify RepoTend v0.1.0 tagged installation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/verify-v0.1.0-tag.yml
+
+permissions:
+  contents: read
+
+jobs:
+  tag-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out published v0.1.0 tag
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: v0.1.0
+          persist-credentials: false
+      - name: Confirm exact tagged commit
+        run: test "$(git rev-parse HEAD)" = "37fd2e2f8b525e24d4e6ac26a0e8f021c3bf4f6e"
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Fresh install from the actual tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$(mktemp -d)"
+          trap 'rm -rf "$root"' EXIT
+          mkdir -p "$root/consumer"
+          node scripts/install-skill.mjs --dest "$root/copilot/repotend"
+          node "$root/copilot/repotend/scripts/audit.mjs" --root "$root/consumer" --format json > "$root/result.json"
+          node "$root/copilot/repotend/scripts/remediate.mjs" --root "$root/consumer" --format json > "$root/preview.json"
+          node -e 'const fs=require("fs");const r=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));const p=JSON.parse(fs.readFileSync(process.argv[2],"utf8"));if(r.toolVersion!=="0.1.0"||r.findings.length!==13||r.errors.length||p.proposals.length!==2)process.exit(1)' "$root/result.json" "$root/preview.json"
