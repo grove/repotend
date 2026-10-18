@@ -1,6 +1,8 @@
 # Install RepoTend as an agent skill (experimental)
 
-## Skills CLI (multi-agent skill discovery; experimental)
+**Choose one installation path, not both:** the Skills CLI is the simplest route for supported coding assistants; the separate Copilot CLI installer below is an alternative. Either way, the audit runs locally and needs Node.js 22.16+.
+
+## Option A: Skills CLI (recommended; experimental)
 
 Install the self-contained skill with:
 
@@ -10,13 +12,56 @@ npx skills@latest add grove/repotend
 
 The CLI copies `skills/repotend` into an agent-supported skill location. The skill includes scripts, reference docs, the **vendored YAML v2.8.1 parser**, and its upstream ISC license. With Node.js 22.16+ available, **there is no `npm ci` or other setup step**. Unlike a source checkout, the copied skill does not rely on the root project's `node_modules`. A normal audit can run offline.
 
-Find the destination printed by the Skills CLI and ask the agent to audit your repository with RepoTend. Agent discovery/permission behavior outside Copilot remains unverified live; test your chosen host. An audit is read-only and never runs dependencies or scripts from the audited repository.
+Find the destination printed by the Skills CLI and use the assistant you selected at installation. Agent discovery/permission behavior outside Copilot remains unverified live; test your chosen host. An audit is read-only and never runs dependencies or scripts from the audited repository.
 
-## GitHub Copilot CLI installer (live validated)
+### Prompt your assistant
 
-RepoTend also provides a **copied, self-contained skill installation** built from a source checkout. It includes the validator, documentation, license, and pinned runtime dependency. No absolute symlinks, global npm package, or target-project dependency setup are needed. The source checkout can be removed after installation.
+Open the project you want checked in your coding assistant. Start a new conversation or restart the assistant if the skill was installed while it was running. Ask for **RepoTend** by name; no special slash command is required.
 
-## Requirements and boundaries
+**1. First, run a read-only audit:**
+
+```text
+Use the RepoTend skill to audit this repository. Explain what passed,
+separate verified findings from heuristic recommendations, and prioritize
+the improvements that matter. Do not change any files.
+```
+
+**2. If useful, preview supported fixes:**
+
+```text
+Use RepoTend to prepare its supported fixes. Show the full proposed
+diffs and plan ID. Do not apply anything until I explicitly approve
+the exact plan.
+```
+
+**3. Or focus the explanation on GitHub Actions:**
+
+```text
+Use RepoTend to review this repository's GitHub Actions findings.
+Explain possible duplicate runs, workflow permissions, and action
+pinning, with caveats. Do not modify anything.
+```
+
+The focus prompt still uses RepoTend's ordinary 13-check audit; it does not enable new checks. Only a missing pull request template and `.editorconfig` have built-in proposed additions. An agent's shell access is **not** permission to apply a fix; review the entire diff and plan ID first.
+
+### Troubleshoot Skills CLI discovery
+
+- **The agent doesn't recognize RepoTend:** confirm you installed it for the assistant and installation scope you're using; check that the copied `repotend/SKILL.md` and `scripts/audit.mjs` exist at the selected destination; restart the assistant session and try the first prompt again. Exact skill locations and discovery behavior vary by host.
+- **The agent recognizes it but can't run the audit:** check `node --version` (22.16+), ensure the copied skill includes `vendor/yaml`, and inspect the tool permissions or workspace boundary. There is **no npm dependency install step** for the Skills CLI version.
+- **Direct fallback:** from a terminal with access to the installed skill, run the following, replacing both absolute paths:
+
+  ```sh
+  node "/absolute/path/to/installed/repotend/scripts/audit.mjs" \\
+    --root "/absolute/path/to/your-project" --format markdown
+  ```
+
+  This runs the same deterministic audit without AI or agent discovery. Don't execute scripts or install packages in the target project. If RepoTend fails to run, do not treat missing output as a clean audit.
+
+## Option B: GitHub Copilot CLI's separate installer (live validated)
+
+For users who specifically want the tested Copilot CLI installer, RepoTend also provides a **copied, self-contained installation** built from a source checkout. This option is not required after using the Skills CLI. It includes the validator, documentation, license, and pinned runtime dependency. No absolute symlinks, global npm package, or target-project dependency setup are needed. The source checkout can be removed after installation.
+
+### Requirements and boundaries
 
 - Git, npm, and Node.js **22.16+** on the machine running the validator.
 - Initial network access to GitHub and the npm registry. Audits and remediation work offline after installation.
@@ -24,7 +69,7 @@ RepoTend also provides a **copied, self-contained skill installation** built fro
 - The shell examples target macOS/Linux. Windows installation has not been validated; use WSL with Node/npm installed inside WSL. Cloud agents must receive the entire installed directory and have Node available within their workspace; discovery outside that workspace is not assumed.
 - The host agent may send repository content to its configured model provider. Review host privacy settings before auditing private code.
 
-## Install once, outside the audited repository
+### Install once, outside the audited repository
 
 Run these commands from outside the repository you want to audit:
 
@@ -41,7 +86,7 @@ This is a personal installation, discoverable across local projects. GitHub docu
 
 The live validation used the same installer with `--dest /absolute/path/to/disposable-project/.github/skills/repotend`, a project-level Copilot location. Keep the tool checkout separate and never run npm at the target-project root. The copied skill has its own dependency setup; do not commit its `node_modules`. Personal-directory discovery is documented from the host specification but has not been exercised in the live session; see [the exact tested setup](AGENT_VALIDATION.md).
 
-## One independent audit
+### One independent audit
 
 From the repository you want to audit:
 
@@ -51,7 +96,7 @@ node "$HOME/.copilot/skills/repotend/scripts/audit.mjs" --root "$PWD" --format j
 
 Use `--format markdown` for a human-readable report. Audit exits 0 for advisory outcomes, 1 for explicitly enforced violations, and 2 for execution/configuration errors. A nonzero launch failure or absent JSON is not a completed audit. See [configuration](CONFIGURATION.md).
 
-## Audit and prepare fixes with Copilot
+### Audit and prepare fixes with Copilot
 
 From the target repository, start `copilot` with its ordinary interactive permissions, then ask:
 
@@ -69,7 +114,7 @@ Replace PLAN_ID with the full displayed digest. To decline, reply `I do not appr
 
 [Agent validation](AGENT_VALIDATION.md) distinguishes observed live behavior from deterministic tests and outstanding acceptance. Script success alone never proves host discovery or human consent.
 
-## Preview, approval, and verification without an agent
+### Preview, approval, and verification without an agent
 
 ```sh
 # Read-only: review the complete diff and plan ID.
@@ -86,7 +131,7 @@ git diff --no-index /dev/null .github/pull_request_template.md
 
 The `git diff --no-index` commands show new, untracked files and normally exit 1 when a diff exists. Applying can only add a missing PR template and EditorConfig; it verifies both affected rules. A stale/repeat plan is refused. The digest proves content consistency, **not human consent**; callers must enforce approval. See [remediation safety and partial-write limitations](REMEDIATION.md).
 
-## Update and uninstall
+### Update and uninstall
 
 The install is a snapshot, not a live link to the checkout. Record the chosen source commit when updating:
 
@@ -101,12 +146,14 @@ After independently testing `repotend-next/scripts/audit.mjs`, close Copilot, mo
 
 To uninstall, close Copilot and remove only the installed `$HOME/.copilot/skills/repotend` directory. The tool checkout can also be removed. Uninstall does not undo files you approved adding to target repositories.
 
-## Troubleshooting and validation
+### Troubleshooting the Copilot-specific installer
+
+The following points apply to **Option B**, not the Skills CLI installation above.
 
 - **Skill missing:** confirm `~/.copilot/skills/repotend/SKILL.md` exists, restart Copilot, and inspect `/skills info repotend`. Ask by name without supplying a script path to test discovery.
-- **Missing module / corrupt setup:** stop; no findings have been verified. Reinstall into a new destination from a trusted checkout. Copying only `SKILL.md` or the source skill folder omits the dependency and is unsupported.
-- **Old Node / npm failure:** check `node --version` and `npm --version`, registry/network availability, and writable installation space. A failed installer exits 2 and does not advertise success.
-- **Existing destination:** inspect it and choose a fresh path. Nothing is overwritten.
+- **Missing module / corrupt setup:** stop; no findings have been verified. Reinstall the Copilot-specific copied installation from a trusted checkout. Copying **only** `SKILL.md` is insufficient because it omits the scripts. In contrast, a complete `skills/repotend` folder installed via the Skills CLI already bundles the YAML parser and requires no `npm ci`.
+- **Old Node / npm failure (Option B):** check `node --version` and `npm --version`, registry/network availability, and writable installation space. A failed installer exits 2 and does not advertise success.
+- **Existing destination (Option B):** inspect it and choose a fresh path. Nothing is overwritten.
 - **Workspace boundary:** a personal install may need one-time host permission to read/run its scripts outside the target workspace. If the host cannot access it, stop and report that limitation; do not install dependencies in the target.
 - **Stale plan:** rerun preview, review every diff again, and obtain new approval. Never silently replace the reviewed ID.
 

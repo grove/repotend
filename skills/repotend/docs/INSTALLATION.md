@@ -19,9 +19,41 @@ node "/absolute/path/to/installed/repotend/scripts/audit.mjs" \
   --root "/absolute/path/to/your-project" --format json
 ```
 
-Or ask your agent: "Audit this repository with RepoTend. Explain verified findings separately from heuristic recommendations. Do not change files."
+Or ask your agent to use the skill **by name**. There is no required slash command; open the target project in the assistant selected during installation and start a fresh session if necessary.
+
+**First audit (recommended):**
+
+```text
+Use the RepoTend skill to audit this repository. Explain what passed,
+separate verified findings from heuristic recommendations, and prioritize
+improvements. Do not change any files.
+```
+
+**Preview safe fixes (no changes without approval):**
+
+```text
+Use RepoTend to prepare its supported fixes. Show the complete diffs
+and plan ID. Wait for my explicit approval before applying anything.
+```
+
+**Focus on GitHub Actions:**
+
+```text
+Use RepoTend to review my GitHub Actions findings for possible duplicate
+runs, broad workflow permissions, and action pinning. Explain caveats.
+Do not modify anything.
+```
+
+RepoTend always runs the same 13 checks; the GitHub Actions prompt focuses the *explanation*. Only missing PR templates and `.editorconfig` have supported automatic additions.
 
 The audit and remediation preview are read-only. A failed audit must be reported as an execution error, **not** a clean report. Applying either supported new-file remediation requires human approval of the full preview, exact plan ID, and target root.
+
+## If your assistant can't find or run the skill
+
+- Confirm that the Skills CLI installed RepoTend for **the assistant and scope you selected**, then locate the installed `repotend/SKILL.md` and `scripts/audit.mjs`.
+- Restart or open a new assistant session; ask explicitly for **RepoTend** by name. Host-specific discovery is experimental outside the tested Copilot setup.
+- If it still fails, run the direct `node .../scripts/audit.mjs` command above. Check `node --version` (22.16+) and that the copied skill contains `vendor/yaml`. **Don't run `npm ci`** to repair a Skills CLI installation; the parser is bundled.
+- Permission to run a read-only audit is **not** approval to apply any proposed file changes. If the audit fails, report the error rather than treating it as a passing report.
 
 ## Notes and boundaries
 
