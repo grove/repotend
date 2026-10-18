@@ -92,6 +92,47 @@ The bold decision phrases are explanatory prose, not report statuses or fields. 
 
 The automated fixture in `test/workflows.test.mjs` audits these exact snippets and checks the statuses, confidence, and evidence. It validates the static example, not a live agent response, GitHub policy inspection, release execution, or measured CI savings.
 
+## Evidence in agent reports
+
+Use the existing JSON `ruleId`, `evidence[].path`, and optional `evidence[].line` in agent explanations. Each distinct evidence location appears once; a linked label already supplies the path. The validator remains local and offline. Remote/revision verification is optional host-side, read-only work; if unavailable, keep plain text. Follow the full [skill guidance](https://github.com/grove/repotend/blob/main/skills/repotend/SKILL.md#cite-rule-ids-and-evidence) before linking.
+
+### Real-workflow sample
+
+On October 18, 2026, a fresh read-only audit of the existing public fixture `sindresorhus/escape-string-regexp` at `a7f7dabaf336bda98d2166848af15d9168b10bcf` returned 5 PASS, 8 advisory WARN, and no errors (exit 0). The checkout's remote and full `HEAD` were verified, its worktree was clean before and after the audit, and GitHub's read-only contents API confirmed this exact file's public URL at that commit. No target code was executed or repository content uploaded. Relevant JSON fields:
+
+```json
+{
+  "ruleId": "security.action-pinning",
+  "status": "WARN",
+  "confidence": "verified",
+  "evidence": [
+    { "path": ".github/workflows/main.yml", "line": 16 },
+    { "path": ".github/workflows/main.yml", "line": 17 }
+  ]
+}
+```
+
+An agent can present this finding as:
+
+> **WARN — `security.action-pinning` (verified):** External actions use mutable refs at [.github/workflows/main.yml:16–17](https://github.com/sindresorhus/escape-string-regexp/blob/a7f7dabaf336bda98d2166848af15d9168b10bcf/.github/workflows/main.yml#L16-L17). Consider reviewed full-SHA pins after confirming the intended action versions and update process. Pinning alone does not establish action safety.
+
+The two consecutive evidence entries are combined into one linked range without repeating the path. The link targets the audited commit, not today's default branch. This is an observed validator result with a manually reviewed presentation example, not a live agent-host acceptance claim. The fixture and pinned revision are already used by `npm run validate:external`; that opt-in integration command requires network access, while the audit itself does not.
+
+### Fallback review cases
+
+Replay these scenarios when reviewing an agent response. They specify presentation expectations, not new validator behavior or automated host coverage.
+
+| Available evidence/context | Expected presentation |
+| --- | --- |
+| Local-only repository; `.github/workflows/test.yml`, line 6 | `ci.path-filter-safety` — `.github/workflows/test.yml:6`; no URL. |
+| Unknown remote, non-GitHub remote, multiple unresolved remotes, or a private/inaccessible GitHub repository | Keep the same local reference and state that a public repository/revision link could not be verified. Do not guess or probe for credentials. |
+| Verified public checkout; audit root is `packages/widget`, evidence is `docs/contributing.md` without a line | `repo.contributing` — `docs/contributing.md`; no line or URL is invented. |
+| Same nested root; evidence is `.github/workflows/test.yml:6` and a matching committed file/line is verified | Label stays `.github/workflows/test.yml:6`; URL path includes the verified `packages/widget/` prefix. Never link the repository-root workflow by mistake. |
+| Missing local template, or file renamed/deleted since the audit | Keep the original evidence path and explain the absence/change. Do not link a replacement or nonexistent file; rerun the audit if current evidence is needed. |
+| Local edits differ from `HEAD`, or a local commit is not confirmed on GitHub | Keep local evidence; neither a remote URL nor a local SHA proves matching published bytes. |
+| Only a verified matching branch/ref is available | Link only to that established ref, labeled **nonpermanent; branch may move**. An unknown ref means plain text. |
+| Several findings cite the same file/line | Keep each finding's rule ID; within each finding render that location once, without a redundant parenthesized copy. |
+
 ## Deeper validation
 
 For complete GitHub Actions semantics and expression validation, run [actionlint](https://github.com/rhysd/actionlint) separately. RepoTend's own `ci.workflow-validity` currently checks YAML plus a small set of core workflow structure rules. Integration with actionlint's diagnostics is a follow-up task, not a feature claimed by this PR.
