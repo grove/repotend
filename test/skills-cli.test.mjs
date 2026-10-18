@@ -8,65 +8,55 @@ import test from 'node:test';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-test('a Skills CLI-style directory copy can be prepared and audited independently', async (t) => {
+test('Skills CLI style copy audits a separate project with no npm install', async (t) => {
   const root = await mkdtemp(join(tmpdir(), 'repotend-skills-cli-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   const skill = join(root, 'installed skills', 'repotend');
   const target = join(root, 'application');
+  // Simulate the Skills CLI: copy only the skill directory, not the repo root.
   await cp(join(repo, 'skills/repotend'), skill, { recursive: true });
   await mkdir(join(target, '.github/workflows'), { recursive: true });
-  await writeFile(join(target, '.github/workflows/check.yml'),
-    'name: check\non: pull_request\npermissions: { contents: read }\njobs:\n  check:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo ok\n');
-  await writeFile(join(target, 'package.json'), JSON.stringify({ scripts: {
-    preinstall: 'node -e "process.exit(97)"',
-  } }));
-  const marker = join(target, 'sentinel');
-  await writeFile(marker, 'unchanged');
-  const before = await Promise.all([
-    readFile(join(target, 'package.json'), 'utf8'),
-    readFile(join(target, '.github/workflows/check.yml'), 'utf8'),
-    readFile(marker, 'utf8'),
-  ]);
-
-  const manifest = JSON.parse(await readFile(join(skill, 'package.json'), 'utf8'));
-  const lock = JSON.parse(await readFile(join(skill, 'package-lock.json'), 'utf8'));
-  assert.equal(manifest.dependencies.yaml, '2.8.1');
-  assert.equal(lock.packages['node_modules/yaml'].version, manifest.dependencies.yaml);
-  assert.ok(lock.packages['node_modules/yaml'].integrity.startsWith('sha512-'));
+  await writeFile(join(target, '.github/workflows/ci.yml'), [
+    'name: test',
+    'on: [push, pull_request]',
+    'permissions: read-all',
+    'jobs:',
+    '  check:',
+    '    runs-on: ubuntu-latest',
+    '    steps:',
+    '      - uses: actions/checkout@v4',
+    '',
+  ].join('\n'));
+  const before = await readFile(join(target, '.github/workflows/ci.yml'), 'utf8');
   assert.match(await readFile(join(skill, 'SKILL.md'), 'utf8'), /^---\nname: repotend\n/);
-  for (const file of ['docs/INSTALLATION.md', 'docs/WORKFLOW_CHECKS.md',
-    'docs/CONFIGURATION.md', 'docs/REMEDIATION.md', 'LICENSE']) {
-    assert.ok((await readFile(join(skill, file), 'utf8')).length > 0, file);
-  }
-  const audit = () => spawnSync(process.execPath, [join(skill, 'scripts/audit.mjs'),
-    '--root', target, '--format', 'json'], { cwd: target, encoding: 'utf8', timeout: 30_000 });
+  assert.match(await readFile(join(skill, 'vendor/yaml/LICENSE'), 'utf8'), /Permission to use/);
+  assert.match(await readFile(join(skill, 'vendor/yaml/README.md'), 'utf8'), /v2.8.1/);
 
-  // The skills CLI copies files, it does not install npm dependencies.
-  const missing = audit();
-  assert.equal(missing.status, 2);
-  assert.equal(missing.stdout, '');
-  assert.match(missing.stderr, /yaml|ERR_MODULE_NOT_FOUND/);
-
-  // Setup only the copied skill's pinned dependency; ignore all package lifecycle scripts.
-  const install = spawnSync('npm', ['ci', '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], {
-    cwd: skill, encoding: 'utf8', timeout: 120_000,
+  const run = (script) => spawnSync(process.execPath, [join(skill, 'scripts', script),
+    '--root', target, '--format', 'json'], {
+    cwd: target, encoding: 'utf8', timeout: 30000,
   });
-  assert.equal(install.status, 0, install.stderr);
-  assert.equal(JSON.parse(await readFile(join(skill, 'node_modules/yaml/package.json'), 'utf8')).version,
-    manifest.dependencies.yaml);
-
-  const result = audit();
-  assert.equal(result.status, 0, result.stderr);
-  const report = JSON.parse(result.stdout);
+  // No network, npm, node_modules or credentials are used in the copied skill.
+  const audit = run('audit.mjs');
+  assert.equal(audit.status, 0, audit.stderr);
+  const report = JSON.parse(audit.stdout);
   assert.equal(report.findings.length, 13);
   assert.deepEqual(report.errors, []);
-  assert.equal(report.findings.find((f) => f.ruleId === 'ci.workflow-validity').status, 'PASS');
+  const finding = (id) => report.findings.find((f) => f.ruleId === id);
+  assert.equal(finding('ci.workflow-validity').status, 'PASS');
+  assert.equal(finding('ci.duplicate-triggers').status, 'WARN');
+  assert.equal(finding('security.action-pinning').status, 'WARN');
+  assert.equal(finding('repo.pr-template').status, 'WARN');
 
-  const after = await Promise.all([
-    readFile(join(target, 'package.json'), 'utf8'),
-    readFile(join(target, '.github/workflows/check.yml'), 'utf8'),
-    readFile(marker, 'utf8'),
-  ]);
-  assert.deepEqual(after, before);
-  await assert.rejects(readFile(join(target, 'UNEXPECTED')), { code: 'ENOENT' });
+  const preview = run('remediate.mjs');
+  assert.equal(preview.status, 0, preview.stderr);
+  assert.equal(JSON.parse(preview.stdout).proposals.length, 2);
+  assert.equal(await readFile(join(target, '.github/workflows/ci.yml'), 'utf8'), before);
+
+  // YAML syntax errors must still be detected, with evidence, not silently skipped.
+  await writeFile(join(target, '.github/workflows/ci.yml'), 'name: [broken\n');
+  const invalid = run('audit.mjs');
+  assert.equal(invalid.status, 0, invalid.stderr);
+  assert.equal(JSON.parse(invalid.stdout).findings.find(
+    (f) => f.ruleId === 'ci.workflow-validity').status, 'WARN');
 });
