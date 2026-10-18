@@ -2,13 +2,15 @@
 
 ## Skills CLI (multi-agent skill discovery; experimental)
 
-Use `npx skills@latest add grove/repotend` to copy the `repotend` skill into an agent-supported skill directory. This **only copies files**: it does not execute `npm ci` or install dependencies. Locate the copied `SKILL.md` and, in **that same installed skill directory** (not your application), run:
+Install the self-contained skill with:
 
 ```sh
-npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+npx skills@latest add grove/repotend
 ```
 
-The skill includes its own pinned package manifest, lockfile, scripts and reference documentation. Do not copy only `SKILL.md`. The audit requires Node.js 22.16+ and the pinned `yaml` parser to be present in the installed skill's `node_modules`. Skill discovery and path conventions vary by agent; actual use outside Copilot CLI is not yet live-validated. Request the audit by skill name only after confirming setup. Never install or execute the target repository's dependencies as part of RepoTend.
+The CLI copies `skills/repotend` into an agent-supported skill location. The skill includes scripts, reference docs, the **vendored YAML v2.8.1 parser**, and its upstream ISC license. With Node.js 22.16+ available, **there is no `npm ci` or other setup step**. Unlike a source checkout, the copied skill does not rely on the root project's `node_modules`. A normal audit can run offline.
+
+Find the destination printed by the Skills CLI and ask the agent to audit your repository with RepoTend. Agent discovery/permission behavior outside Copilot remains unverified live; test your chosen host. An audit is read-only and never runs dependencies or scripts from the audited repository.
 
 ## GitHub Copilot CLI installer (live validated)
 
