@@ -18,7 +18,7 @@ test('a Skills CLI-style directory copy can be prepared and audited independentl
   await writeFile(join(target, '.github/workflows/check.yml'),
     'name: check\non: pull_request\npermissions: { contents: read }\njobs:\n  check:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo ok\n');
   await writeFile(join(target, 'package.json'), JSON.stringify({ scripts: {
-    preinstall: 'node -e "require(\\'fs\\').writeFileSync(\\'UNEXPECTED\\', \\'executed\\')"',
+    preinstall: 'node -e "process.exit(97)"',
   } }));
   const marker = join(target, 'sentinel');
   await writeFile(marker, 'unchanged');
