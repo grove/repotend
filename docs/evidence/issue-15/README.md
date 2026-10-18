@@ -1,5 +1,7 @@
 # RepoTend #15: Deliver evidence handoff
 
+Later [GitHub-hosted macOS native follow-up](native-follow-up/README.md): native boundary canaries succeeded, but Node startup was denied before behavioral tests ran. The records below remain the historical local attempts.
+
 The CLI improvement is implemented and ordinarily tested. **The native Deliver demonstration is BLOCKED**, because the actual native sandbox preflight failed. No native product test passed or failed; none ran. Overall requirement coverage remains **UNKNOWN**.
 
 This handoff is for [Foundryline #18](https://github.com/grove/foundryline/issues/18) and [#21](https://github.com/grove/foundryline/issues/21). It does not modify Foundryline or close its issues. An unmerged RepoTend PR is authorized; merge, deployment and applying remediation are not.
