@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 import process from 'node:process';
 const source = join(dirname(fileURLToPath(import.meta.url)), 'cli.ts');
-const result = spawnSync(process.execPath, ['--experimental-strip-types', source, ...process.argv.slice(2)], {
+// Node 22.16/22.17 warn about type stripping even when only showing help.
+const result = spawnSync(process.execPath, ['--disable-warning=ExperimentalWarning', '--experimental-strip-types', source, ...process.argv.slice(2)], {
   stdio: 'inherit', shell: false,
 });
 if (result.error) {
