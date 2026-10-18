@@ -1,6 +1,20 @@
-# Install RepoTend for GitHub Copilot CLI (experimental)
+# Install RepoTend as an agent skill (experimental)
 
-RepoTend provides a **copied, self-contained skill installation** built from a source checkout. It includes the validator, documentation, license, and pinned runtime dependency. No absolute symlinks, global npm package, or target-project dependency setup are needed. The source checkout can be removed after installation.
+## Skills CLI (multi-agent skill discovery; experimental)
+
+Install the self-contained skill with:
+
+```sh
+npx skills@latest add grove/repotend
+```
+
+The CLI copies `skills/repotend` into an agent-supported skill location. The skill includes scripts, reference docs, the **vendored YAML v2.8.1 parser**, and its upstream ISC license. With Node.js 22.16+ available, **there is no `npm ci` or other setup step**. Unlike a source checkout, the copied skill does not rely on the root project's `node_modules`. A normal audit can run offline.
+
+Find the destination printed by the Skills CLI and ask the agent to audit your repository with RepoTend. Agent discovery/permission behavior outside Copilot remains unverified live; test your chosen host. An audit is read-only and never runs dependencies or scripts from the audited repository.
+
+## GitHub Copilot CLI installer (live validated)
+
+RepoTend also provides a **copied, self-contained skill installation** built from a source checkout. It includes the validator, documentation, license, and pinned runtime dependency. No absolute symlinks, global npm package, or target-project dependency setup are needed. The source checkout can be removed after installation.
 
 ## Requirements and boundaries
 

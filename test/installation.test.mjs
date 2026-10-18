@@ -95,16 +95,17 @@ test('copied installation works without its source checkout and preserves the re
   assert.equal(run('remediate.mjs', '--apply', stale.planId).status, 2);
   assert.deepEqual(await snapshot(consumer), changed);
 
-  // Installation damage must be an execution failure, never findings or success.
+  // The parser is bundled: an audit works even if the copied skill's
+  // historical npm dependency tree is absent.
   const savedModules = join(dirname(destination), 'saved-node-modules');
   await rename(join(destination, 'node_modules'), savedModules);
   for (const script of ['audit.mjs', 'remediate.mjs']) {
-    const failed = run(script);
-    assert.equal(failed.status, 2);
-    assert.equal(failed.stdout, '');
-    assert.match(failed.stderr, /yaml|ERR_MODULE_NOT_FOUND/);
+    const output = run(script);
+    assert.equal(output.status, 0, output.stderr);
+    assert.ok(JSON.parse(output.stdout), script);
   }
   await rename(savedModules, join(destination, 'node_modules'));
+  // A corrupt engine remains a distinct execution error.
   await writeFile(join(destination, 'scripts/engine.ts'), 'this is invalid TypeScript !!!');
   const corrupt = run('audit.mjs');
   assert.equal(corrupt.status, 2);

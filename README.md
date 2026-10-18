@@ -28,6 +28,16 @@ These are *examples*, not results from your project. RepoTend won't insist you f
 - **When you return to an old repository:** get a quick reminder of the maintenance tasks you may have forgotten.
 - **When GitHub Actions gets complicated:** find possible workflow issues to investigate, without blindly changing your CI.
 
+## Install with the Skills CLI (experimental)
+
+Install RepoTend as an Agent Skill in supported coding assistants with one command:
+
+```sh
+npx skills@latest add grove/repotend
+```
+
+**No second setup command is required.** The `yaml` v2.8.1 parser is bundled with the skill, so the copied skill works with Node.js 22.16+ without `npm ci`, installing dependencies in your project, or downloading anything during an audit. Ask your agent to audit your repository using RepoTend. See [installation options](docs/INSTALLATION.md) for manual use, privacy, and limitations.
+
 ## Give it a try
 
 You'll need **Git, npm, and Node.js 22.16 or newer**. These commands work on macOS and Linux; on Windows, use WSL (native Windows hasn't been validated).

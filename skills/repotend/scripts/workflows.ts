@@ -2,7 +2,10 @@
  * These checks inspect static workflow configuration only; they never execute steps.
  * Full GitHub Actions expression/schema validation remains delegated to actionlint.
  */
-import { LineCounter, isNode, parseDocument } from 'yaml';
+// Vendored yaml@2.8.1: works directly from a copied skill, without npm setup.
+import { LineCounter } from '../vendor/yaml/src/parse/line-counter.ts';
+import { isNode } from '../vendor/yaml/src/nodes/identity.ts';
+import { parseDocument } from '../vendor/yaml/src/public-api.ts';
 import type { RepositoryReader, Rule, Observed, Evidence, Confidence } from './engine.ts';
 
 type Mapping = Record<string, unknown>;
