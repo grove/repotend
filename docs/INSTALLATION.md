@@ -61,7 +61,7 @@ The focus prompt still uses RepoTend's ordinary 13-check audit; it does not enab
 
 For users who specifically want the tested Copilot CLI installer, RepoTend also provides a **copied, self-contained installation** built from a source checkout. This option is not required after using the Skills CLI. It includes the validator, documentation, license, and pinned runtime dependency. No absolute symlinks, global npm package, or target-project dependency setup are needed. The source checkout can be removed after installation.
 
-## Requirements and boundaries
+### Requirements and boundaries
 
 - Git, npm, and Node.js **22.16+** on the machine running the validator.
 - Initial network access to GitHub and the npm registry. Audits and remediation work offline after installation.
@@ -69,7 +69,7 @@ For users who specifically want the tested Copilot CLI installer, RepoTend also 
 - The shell examples target macOS/Linux. Windows installation has not been validated; use WSL with Node/npm installed inside WSL. Cloud agents must receive the entire installed directory and have Node available within their workspace; discovery outside that workspace is not assumed.
 - The host agent may send repository content to its configured model provider. Review host privacy settings before auditing private code.
 
-## Install once, outside the audited repository
+### Install once, outside the audited repository
 
 Run these commands from outside the repository you want to audit:
 
@@ -86,7 +86,7 @@ This is a personal installation, discoverable across local projects. GitHub docu
 
 The live validation used the same installer with `--dest /absolute/path/to/disposable-project/.github/skills/repotend`, a project-level Copilot location. Keep the tool checkout separate and never run npm at the target-project root. The copied skill has its own dependency setup; do not commit its `node_modules`. Personal-directory discovery is documented from the host specification but has not been exercised in the live session; see [the exact tested setup](AGENT_VALIDATION.md).
 
-## One independent audit
+### One independent audit
 
 From the repository you want to audit:
 
@@ -96,7 +96,7 @@ node "$HOME/.copilot/skills/repotend/scripts/audit.mjs" --root "$PWD" --format j
 
 Use `--format markdown` for a human-readable report. Audit exits 0 for advisory outcomes, 1 for explicitly enforced violations, and 2 for execution/configuration errors. A nonzero launch failure or absent JSON is not a completed audit. See [configuration](CONFIGURATION.md).
 
-## Audit and prepare fixes with Copilot
+### Audit and prepare fixes with Copilot
 
 From the target repository, start `copilot` with its ordinary interactive permissions, then ask:
 
@@ -114,7 +114,7 @@ Replace PLAN_ID with the full displayed digest. To decline, reply `I do not appr
 
 [Agent validation](AGENT_VALIDATION.md) distinguishes observed live behavior from deterministic tests and outstanding acceptance. Script success alone never proves host discovery or human consent.
 
-## Preview, approval, and verification without an agent
+### Preview, approval, and verification without an agent
 
 ```sh
 # Read-only: review the complete diff and plan ID.
@@ -131,7 +131,7 @@ git diff --no-index /dev/null .github/pull_request_template.md
 
 The `git diff --no-index` commands show new, untracked files and normally exit 1 when a diff exists. Applying can only add a missing PR template and EditorConfig; it verifies both affected rules. A stale/repeat plan is refused. The digest proves content consistency, **not human consent**; callers must enforce approval. See [remediation safety and partial-write limitations](REMEDIATION.md).
 
-## Update and uninstall
+### Update and uninstall
 
 The install is a snapshot, not a live link to the checkout. Record the chosen source commit when updating:
 
@@ -146,7 +146,7 @@ After independently testing `repotend-next/scripts/audit.mjs`, close Copilot, mo
 
 To uninstall, close Copilot and remove only the installed `$HOME/.copilot/skills/repotend` directory. The tool checkout can also be removed. Uninstall does not undo files you approved adding to target repositories.
 
-## Troubleshooting the Copilot-specific installer
+### Troubleshooting the Copilot-specific installer
 
 The following points apply to **Option B**, not the Skills CLI installation above.
 
