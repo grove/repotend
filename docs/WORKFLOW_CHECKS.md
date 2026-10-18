@@ -10,12 +10,14 @@ RepoTend performs **read-only static analysis** of `.github/workflows/*.yml` and
 | `security.workflow-permissions` | Workflow- and job-level `permissions:`; broad `write` permissions and inherited defaults | Contextual heuristic; cannot infer effective org/repo permissions or whether write access is justified |
 | `ci.concurrency` | PR workflows without recognizable cancellation groups | Advisory opportunity; cancellation can be inappropriate for deploy jobs |
 | `ci.duplicate-triggers` | Push and PR triggers likely to overlap for feature branches | Heuristic only, not an estimate of duplicate runner minutes |
-| `ci.path-filter-safety` | Event-level `paths` or `paths-ignore` filters | Potential risk **if** affected checks are required by branch/ruleset policies (which are not inspected yet) |
+| `ci.path-filter-safety` | Event-level `paths` or `paths-ignore` filters | Potential risk **if** affected checks are required by branch/ruleset policies (not inspected by the local validator) |
 | `security.action-pinning` | External steps/actions, Docker images, and reusable workflow references using mutable refs | Checks references, not trustworthiness of the reviewed SHA; local repository paths are excluded |
 
 All six rules use the same registered engine and output statuses as convention checks. Only `ci.workflow-validity` is eligible for explicit opt-in enforcement in this version. The other checks remain advisory by design. Ambiguous or unreadable workflows yield `UNKNOWN` rather than a misleading `PASS`.
 
 Line-level evidence is attached where the YAML parser exposes source locations. `PASS` means the narrow static property was verified, **not** that the workflow is valid in every GitHub Actions context or safe to run.
+
+After the local audit, maintainers may explicitly opt in to [separate read-only GitHub required-check context](GITHUB_VERIFICATION.md). It uses an existing authorized `gh` connection, keeps inaccessible policies uncertain, and never changes the local findings or v0.1 report.
 
 ## Why not automatically fix CI?
 

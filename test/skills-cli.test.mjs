@@ -53,6 +53,13 @@ test('Skills CLI style copy audits a separate project with no npm install', asyn
   assert.equal(JSON.parse(preview.stdout).proposals.length, 2);
   assert.equal(await readFile(join(target, '.github/workflows/ci.yml'), 'utf8'), before);
 
+  const context = spawnSync(process.execPath, [join(skill, 'scripts/verify-github.mjs'),
+    '--root', target, '--repo', 'example/project', '--branch', 'main'], {
+    cwd: target, encoding: 'utf8', timeout: 30000,
+  });
+  assert.equal(context.status, 0, context.stderr);
+  assert.equal(JSON.parse(context.stdout).status, 'not verified');
+
   // YAML syntax errors must still be detected, with evidence, not silently skipped.
   await writeFile(join(target, '.github/workflows/ci.yml'), 'name: [broken\n');
   const invalid = run('audit.mjs');

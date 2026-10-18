@@ -237,6 +237,34 @@ const pathFilterSafety: Rule = {
   },
 };
 
+/** Separate context for the opt-in remote verifier; never changes local findings. */
+export async function pathFilteredJobs(reader: RepositoryReader): Promise<{
+  jobs: Array<{ evidence: Evidence; jobId: string; checkName: string | null; events: string[] }>;
+  problems: string[];
+}> {
+  const result = await scan(reader);
+  const problems = result.problems.map((p) => `${p.path}: ${p.reason}`);
+  if (result.unavailable) problems.push(result.unavailable);
+  const filtered: Array<{ evidence: Evidence; jobId: string; checkName: string | null; events: string[] }> = [];
+  for (const w of result.workflows) {
+    const on = eventMap(w.data);
+    const events = ['push', 'pull_request', 'pull_request_target'].filter((event) => {
+      const conf = map(on[event]);
+      return conf && ('paths' in conf || 'paths-ignore' in conf);
+    });
+    if (!events.length) continue;
+    const tasks = entries(w.data);
+    if (!tasks.length || tasks.length !== Object.keys(jobs(w.data)).length) problems.push(`${w.path}: Invalid or missing jobs`);
+    for (const [jobId, job] of tasks) {
+      const name = job.name ?? jobId;
+      const checkName = typeof name === 'string' && name.length > 0 && !name.includes('${{') &&
+        !job.strategy && !job.uses ? name : null;
+      filtered.push({ evidence: workflowRef(w, 'jobs', jobId), jobId, checkName, events });
+    }
+  }
+  return { jobs: filtered, problems };
+}
+
 const fullSha = /^[a-f\d]{40}$/i;
 function isPinned(uses: string): boolean | undefined {
   if (uses.startsWith('./') || uses.startsWith('$/')) return true;

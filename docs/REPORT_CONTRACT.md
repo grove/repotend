@@ -7,6 +7,8 @@ RepoTend provides versioned JSON contracts that an agent, CI integration, or oth
 
 The schemas target **JSON Schema Draft 2020-12**. The checked-in tests cover the structural constraints and use real audit/preview/apply outputs; before publication they are also reviewed with an independent JSON Schema validator. These schemas identify the future `v0.1.0` release artifact; they are **not published release URLs until that tag is created**. They should be treated as stable within v0.1 once tagged.
 
+The optional [GitHub settings verifier](GITHUB_VERIFICATION.md) emits separate experimental `mode: "github-context"` JSON. It is outside these stable v0.1 contracts and never adds fields or changes statuses in the local audit report.
+
 ## Audit format
 
 The top-level report contains `schemaVersion`, `toolVersion`, `repository`, `mode`, `profile`, `findings`, and `errors`. Each finding has a stable `ruleId`, a rule-specific `ruleVersion`, `status`, impact `severity`, evidence `confidence`, a concise `summary`, `evidence` paths with optional line numbers, nullable `recommendation`, and `enforced`.

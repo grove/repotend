@@ -14,11 +14,12 @@ The first experimental release targets solo maintainers and small GitHub open-so
 - Conservative remediation for two missing files: a PR template and a minimal EditorConfig. Preview is read-only; applying requires a reviewed SHA-256 plan ID and explicit approval. Existing files are not overwritten.
 - Versioned v0.1 report and remediation JSON Schemas, rule documentation, dogfooding, and external audits of two pinned public repositories.
 - A read-only release preflight that checks package/lockfile/runtime version alignment, local JSON Schema targets, clean self-audit, and empty self-remediation preview.
+- A separate, explicitly opt-in GitHub settings verifier for required-check context around path-filtered jobs, using an existing authorized `gh` connection and preserving inaccessible-policy uncertainty and local warnings.
 
 ### Known limitations
 
 - GitHub Actions checks are static, often heuristic, and do not constitute a full `actionlint` validation, security audit, or CI savings measurement.
-- RepoTend cannot inspect remote GitHub settings or inherited organization community defaults without a future API adapter.
+- The default audit cannot inspect remote GitHub settings or inherited organization community defaults. Optional required-check verification is limited to readable branch rules/protection and exact static job names; it does not verify actual runs or overall enforcement.
 - Copilot CLI discovery, approval, and remediation were validated on one documented macOS host configuration; personal-directory discovery, cloud workspaces, native Windows, and other AI hosts remain unverified.
 - Installation uses a source checkout and Node.js 22.16+; RepoTend is not published to npm and does not ship a standalone executable.
 - The configuration reader intentionally accepts a documented subset of YAML. RepoTend does not run audited project scripts.

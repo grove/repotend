@@ -48,6 +48,19 @@ Prioritize the highest-impact actionable WARN findings using plausible impact, t
 
 These phrases are contextual explanations, **not new report statuses or fields**. Recommendations do not authorize edits to files, workflows, or configuration; the remediation approval gates below still apply. Consult `docs/WORKFLOW_CHECKS.md` for caveats and a worked example with a realistic static fixture.
 
+### Optional remote context — explicit opt-in only
+
+After the local audit, only when the maintainer explicitly requests remote verification and an authorized `gh` connection is already available, run the separate read-only verifier:
+
+```sh
+node "<skill-directory>/scripts/verify-github.mjs" --root "<repository-root>" \
+  --repo OWNER/REPO --branch BASE_BRANCH --allow-remote
+```
+
+Establish the repository and base branch before invoking it; do not infer them from a folder name. A request for an ordinary audit does not opt in. Do not install `gh`, obtain credentials, or broaden scopes to make this step work. Without an available connection, say **not verified** and retain the local warning.
+
+Keep `mode: github-context` output separate from the v0.1 report. Cite the branch, timestamps, inspected policy endpoints/ruleset IDs, and inaccessible sources. Distinguish **remote-verified** names/policy observations from **not verified** comparisons and **inaccessible/unknown** configuration. Inspect `requiredCheckConfigurationComplete` and `localProblems`; exit 0 alone is not success. A disabled ruleset does not establish absence of classic required checks. Preserve partial matches and uncertainty; never turn local WARN into PASS. Static name matches do not verify app producers, workflow revisions, trigger applicability, bypasses, or actual merge blockage. See [API permissions, limitations, and examples](docs/GITHUB_VERIFICATION.md).
+
 ## Preview, wait for approval, apply, verify
 
 Only a missing PR template (`repo.pr-template`) and missing EditorConfig (`dx.editorconfig`) have supported fixes. Other findings remain recommendations.
