@@ -13,12 +13,12 @@ jobs:
   native:
     runs-on: macos-15
     timeout-minutes: 12
-    env:
-      WORK: ${{ runner.temp }}/repotend-15-native
     steps:
       - name: Initialize private evidence directory
         run: |
           umask 077
+          WORK="$RUNNER_TEMP/repotend-15-native"
+          echo "WORK=$WORK" >> "$GITHUB_ENV"
           mkdir -p "$WORK/records"
           sw_vers > "$WORK/records/macos.txt"
           uname -a > "$WORK/records/uname.txt"
