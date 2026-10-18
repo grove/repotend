@@ -21,8 +21,19 @@ Node.js 22.16+ is required. The pinned `yaml` v2.8.1 parser is **bundled in this
    node "<skill-directory>/scripts/audit.mjs" --root "<repository-root>" --format json
    ```
 
-2. Use its JSON as the source of truth. Separate findings by `confidence` (`verified` or `heuristic`) and preserve PASS, WARN, FAIL, SUPPRESSED, UNKNOWN, and NOT_APPLICABLE. A SUPPRESSED finding is a documented exception, **not** successful compliance; quote its reason and expiry when present, and explain expired exceptions. Explain evidence and limitations; a narrow PASS is not a security verdict. Prioritize useful findings by impact and effort. Consult `docs/WORKFLOW_CHECKS.md` for workflow caveats.
+2. Use its JSON as the source of truth. Separate findings by `confidence` (`verified` or `heuristic`) and preserve PASS, WARN, FAIL, SUPPRESSED, UNKNOWN, and NOT_APPLICABLE. A SUPPRESSED finding is a documented exception, **not** successful compliance; quote its reason and expiry when present, and explain expired exceptions. Explain evidence and limitations; a narrow PASS is not a security verdict.
 3. Audit exit codes: 0 means completed without enforced failures (warnings and documented suppressions may remain), 1 means explicitly enforced deviations, 2 means execution/configuration failure. A failed invocation or missing/malformed report is **not** a successful audit.
+
+### Recommend decisions, not a warning checklist
+
+Prioritize the highest-impact actionable WARN findings using plausible impact, the risk of a harmful fix, and effort. Explain the order for this repository; do not treat warning counts as a health score or every WARN as a task. For each prioritized finding, cite its rule ID and evidence, state what to do next and why, and name the prerequisite or information to verify before changing anything. Keep verified local absences separate from heuristic workflow concerns.
+
+- **Fix/consider locally:** A verified missing contributor template may justify a small addition when the project invites external contributions. Confirm that a shared organization template does not already meet the need; local absence does not establish absence on GitHub.
+- **Verify externally:** For `ci.path-filter-safety`, first check whether applicable GitHub branch protection or rulesets require the affected check. If required, review a reliable reporting gate before changing filters; otherwise intentional filtering may need no change. The validator has not inspected GitHub policies.
+- **Review intent / quantify:** For `security.workflow-permissions`, establish the release/publish job's required token scopes before recommending reductions; a justified write scope may remain. For `ci.duplicate-triggers`, compare job purpose and actual run history before estimating waste or removing triggers. The validator has not measured runner usage. Do not blindly reduce release permissions, cancel jobs, or remove checks.
+- **Accept/document:** Explicitly allow no change when the choice is reasonable. Keep the WARN visible with its rationale, or suggest a reasoned suppression that retains the finding as SUPPRESSED; never relabel acceptance as PASS or silently disable the rule.
+
+These phrases are contextual explanations, **not new report statuses or fields**. Recommendations do not authorize edits to files, workflows, or configuration; the remediation approval gates below still apply. Consult `docs/WORKFLOW_CHECKS.md` for caveats and a worked example with a realistic static fixture.
 
 ## Preview, wait for approval, apply, verify
 
