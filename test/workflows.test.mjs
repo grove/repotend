@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -103,4 +103,41 @@ test('observed heuristic rules cannot be enforced via policy config', async (t) 
   const root = await repo(t);
   await writeFile(join(root, '.repotend.yml'), 'schema: 1\nrules:\n  ci.concurrency:\n    enforce: true\n');
   await assert.rejects(runAudit(root), /heuristic and cannot be enforced/);
+});
+
+test('documented decision example keeps local absence separate from contextual workflow warnings', async (t) => {
+  const source = new URL('../docs/WORKFLOW_CHECKS.md', import.meta.url);
+  const guide = await readFile(source, 'utf8');
+  assert.equal(await readFile(new URL('../skills/repotend/docs/WORKFLOW_CHECKS.md', import.meta.url), 'utf8'), guide);
+  const snippets = [...guide.matchAll(/```yaml\n([\s\S]*?)```/g)].map((match) => match[1]);
+  assert.equal(snippets.length, 2);
+  const root = await repo(t, snippets[0]);
+  await writeFile(join(root, '.github/workflows/release.yml'), snippets[1]);
+  await mkdir(join(root, '.github/ISSUE_TEMPLATE'));
+  for (const [path, content] of Object.entries({
+    'LICENSE': 'MIT\n',
+    'CONTRIBUTING.md': 'External contributions welcome. Run npm test before opening a PR.\n',
+    'CODE_OF_CONDUCT.md': 'Treat contributors respectfully.\n',
+    'SECURITY.md': 'Report vulnerabilities privately to the maintainers.\n',
+    '.editorconfig': 'root = true\n',
+    '.github/ISSUE_TEMPLATE/bug.md': 'Describe the problem and reproduction steps.\n',
+    'package.json': '{"name":"example-library","private":true,"scripts":{"test":"node --test"}}\n',
+  })) await writeFile(join(root, path), content);
+
+  const report = await runAudit(root);
+  assert.deepEqual(report.errors, []);
+  const expected = ['repo.pr-template', 'security.workflow-permissions', 'ci.duplicate-triggers', 'ci.path-filter-safety'];
+  assert.deepEqual(report.findings.filter((f) => f.status === 'WARN').map((f) => f.ruleId), expected);
+  assert(report.findings.filter((f) => !expected.includes(f.ruleId)).every((f) => f.status === 'PASS'));
+  assert.equal(finding(report, 'repo.pr-template').confidence, 'verified');
+  for (const id of expected.slice(1)) {
+    const observed = finding(report, id);
+    assert.equal(observed.confidence, 'heuristic');
+    assert.equal(observed.enforced, false);
+    assert(observed.evidence.some((item) => item.line > 0 && item.path ===
+      (id === 'security.workflow-permissions' ? '.github/workflows/release.yml' : '.github/workflows/test.yml')));
+  }
+  assert.equal(await readFile(join(root, '.github/workflows/test.yml'), 'utf8'), snippets[0]);
+  assert.equal(await readFile(join(root, '.github/workflows/release.yml'), 'utf8'), snippets[1]);
+  await assert.rejects(readFile(join(root, '.github/pull_request_template.md')), { code: 'ENOENT' });
 });

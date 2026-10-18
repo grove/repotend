@@ -55,11 +55,22 @@ You'll mostly see **PASS** and **WARN**:
 
 ## What should I look at first?
 
-Pick something that would make a real difference to the people using your project:
+Rank the useful decisions by plausible impact, the risk of a harmful fix, and effort. The number of WARNs is not a health score. Pick something that would make a real difference to the people using your project:
 
 - If people struggle to contribute, start with missing instructions or templates.
 - If GitHub Actions is hard to understand, review the workflow warnings one by one.
 - If everything seems intentional, you don't have to change anything just to make the report greener.
+
+For each prioritized warning, an agent should explain **what to do next, why it helps, and what must be verified before changing anything**. Keep verified local absences separate from heuristic workflow concerns:
+
+| Decision | Example and prerequisite |
+| --- | --- |
+| Fix/consider locally | A missing PR template is a verified local absence. Consider adding one if external contributors need guidance and no shared organization template already meets the need. |
+| Verify externally | Path-filtered PR checks matter as required checks only if applicable GitHub policies require them. Check branch protection and rulesets first; the local validator has not done this. |
+| Review intent / quantify | Establish a publish job's required write scopes before reducing permissions. Compare job purpose and actual run history before removing overlapping triggers; RepoTend has not measured wasted runner time. |
+| Accept/document | If the choice is intentional and reasonable, no change may be needed. Explain why while keeping the WARN visible, or propose a documented suppression. Acceptance is not PASS. |
+
+These are explanations, not additional statuses in the report. See the [worked workflow example](WORKFLOW_CHECKS.md#worked-example-prioritize-decisions) for a ranked response covering all four cases. Recommendations do not grant permission to edit files, workflows, or configuration.
 
 You can also [document an exception or turn off a rule](CONFIGURATION.md). Documenting an exception keeps the reason visible, which is often more useful than hiding it.
 
