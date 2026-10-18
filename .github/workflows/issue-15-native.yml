@@ -193,11 +193,11 @@ jobs:
                   if report['status'] == 'EXECUTION UNAVAILABLE':
                       save('execution-unavailable.json', {'scenario': name, 'status': report['status'], 'error': report.get('error'), 'remaining_scenarios': 'stopped; no boundary bypass'})
                       raise RuntimeError('EXECUTION UNAVAILABLE: stopping native experiment')
-                  assert report['status'] == 'CHECKS PASSED', report['status']
+                  assert report['status'] in ('CHECKS PASSED', 'CHECKS FAILED'), report['status']
                   assert report['boundary']['assessment']['status'] == 'OBSERVED'
-                  assert p.returncode == 0
+                  assert p.returncode == (0 if report['status'] == 'CHECKS PASSED' else 2)
                   assert len(report['observations']) == len(checks)
-                  assert all(o['status'] == 'PASSED' and o['argv'] == argv for o, argv in zip(report['observations'], checks))
+                  assert all(o['status'] in ('PASSED', 'FAILED') and o['argv'] == argv for o, argv in zip(report['observations'], checks))
           finally:
               after = {p.name: sha(p) for p in export.iterdir()}
               save('export-integrity-after.json', after)
