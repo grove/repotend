@@ -1,4 +1,15 @@
-# Install RepoTend for GitHub Copilot CLI (experimental)
+# Install RepoTend as an agent skill (experimental)
+
+## Skills CLI (multi-agent skill discovery; experimental)
+
+Use `npx skills@latest add grove/repotend` to copy the `repotend` skill into an agent-supported skill directory. This **only copies files**: it does not execute `npm ci` or install dependencies. Locate the copied `SKILL.md` and, in **that same installed skill directory** (not your application), run:
+
+```sh
+npm ci --omit=dev --ignore-scripts --no-audit --no-fund
+```
+
+The skill includes its own pinned package manifest, lockfile, scripts and reference documentation. Do not copy only `SKILL.md`. The audit requires Node.js 22.16+ and the pinned `yaml` parser to be present in the installed skill's `node_modules`. Skill discovery and path conventions vary by agent; actual use outside Copilot CLI is not yet live-validated. Request the audit by skill name only after confirming setup. Never install or execute the target repository's dependencies as part of RepoTend.
+
 
 RepoTend provides a **copied, self-contained skill installation** built from a source checkout. It includes the validator, documentation, license, and pinned runtime dependency. No absolute symlinks, global npm package, or target-project dependency setup are needed. The source checkout can be removed after installation.
 
