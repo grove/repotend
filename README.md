@@ -30,15 +30,49 @@ These are *examples*, not results from your project. RepoTend won't insist you f
 
 ## Install with the Skills CLI (experimental)
 
-Install RepoTend as an Agent Skill in supported coding assistants with one command:
+Install RepoTend into a supported coding assistant with one command:
 
 ```sh
 npx skills@latest add grove/repotend
 ```
 
-**No second setup command is required.** The `yaml` v2.8.1 parser is bundled with the skill, so the copied skill works with Node.js 22.16+ without `npm ci`, installing dependencies in your project, or downloading anything during an audit. Ask your agent to audit your repository using RepoTend. See [installation options](docs/INSTALLATION.md) for manual use, privacy, and limitations.
+Select your assistant and installation scope when prompted. You'll need Node.js 22.16+ to run audits. **There is no second setup command:** the YAML parser is already bundled with the skill. You do **not** need to clone this repository or run `npm ci` after using the Skills CLI.
 
-## Give it a try
+## Use RepoTend in your AI assistant
+
+Open the project you want to check in the assistant where you installed RepoTend (such as Claude Code, Cursor, or GitHub Copilot CLI). Start a new session if needed, then ask for the skill **by name**. No special slash command is required.
+
+**First audit (recommended; no changes):**
+
+```text
+Use the RepoTend skill to audit this repository. Explain what passed,
+separate verified findings from heuristic recommendations, and prioritize
+the improvements that matter. Do not change any files.
+```
+
+**Preview supported fixes (still no changes):**
+
+```text
+Use RepoTend to prepare its supported fixes. Show the complete proposed
+diffs and plan ID. Do not apply anything unless I explicitly approve
+that exact plan.
+```
+
+**Focus on GitHub Actions:**
+
+```text
+Use RepoTend to review this repository's GitHub Actions findings.
+Explain potential duplicate runs, risky permissions, and action pinning,
+including uncertainties. Do not modify anything.
+```
+
+RepoTend runs its 13 focused checks; the third prompt changes what the assistant *emphasizes*, not which checks RepoTend implements. It can prepare only two automatic additions: a missing pull request template or `.editorconfig`. Other findings are suggestions for you to evaluate.
+
+**Can't find the skill?** Confirm the installation completed for the assistant and scope you're using, restart the assistant session, and ask for **RepoTend** by name. See [installation and troubleshooting](docs/INSTALLATION.md) for a direct command-line fallback. Agent discovery outside the validated Copilot setup is still experimental.
+
+## Alternative: run RepoTend directly (without an AI assistant)
+
+This is a **separate installation method**. If you already used `npx skills@latest add grove/repotend`, skip these clone and `npm ci` steps.
 
 You'll need **Git, npm, and Node.js 22.16 or newer**. These commands work on macOS and Linux; on Windows, use WSL (native Windows hasn't been validated).
 
@@ -102,7 +136,7 @@ node skills/repotend/scripts/remediate.mjs --root "/full/path/to/your-project"
 
 This only shows you the proposed changes. To apply them, you must review the full diff and explicitly supply its matching plan ID in a separate command. RepoTend won't overwrite an existing file. [Read how safe fixes work](docs/REMEDIATION.md).
 
-If you use **GitHub Copilot CLI**, you can [install RepoTend as a skill](docs/INSTALLATION.md) and ask Copilot to run the same audit and explain the findings. The audit itself does not need AI. Be aware that Copilot may send repository content to its model provider.
+For an alternative, separately tested **GitHub Copilot CLI** installer, see [installation options](docs/INSTALLATION.md). The audit itself does not need AI. If you involve an assistant, it may send repository content to its model provider.
 
 You can also [choose which checks matter to your project](docs/CONFIGURATION.md). Everything is advisory until you opt in to enforcement.
 
@@ -110,7 +144,7 @@ You can also [choose which checks matter to your project](docs/CONFIGURATION.md)
 
 **New here?** Start with [Your first audit](docs/GETTING_STARTED.md) and [Understanding your results](docs/UNDERSTANDING_RESULTS.md).
 
-**Want the details?** See the [rule catalog](docs/RULE_CATALOG.md), [configuration](docs/CONFIGURATION.md), [safe fixes](docs/REMEDIATION.md), and [Copilot CLI setup](docs/INSTALLATION.md).
+**Want the details?** See the [rule catalog](docs/RULE_CATALOG.md), [configuration](docs/CONFIGURATION.md), [safe fixes](docs/REMEDIATION.md), and [agent installation and troubleshooting](docs/INSTALLATION.md).
 
 **Want to help?** Bugs, suggestions, and small improvements are welcome. Read [Contributing](CONTRIBUTING.md), follow the [Code of Conduct](CODE_OF_CONDUCT.md), and report vulnerabilities through [the security policy](SECURITY.md), not a public issue.
 
