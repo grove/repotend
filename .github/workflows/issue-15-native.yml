@@ -1,0 +1,232 @@
+name: Temporary issue 15 native Proofline verification
+
+# One bounded push; removed before the evidence PR is opened.
+on:
+  push:
+    branches: [verify/15-native-proofline]
+    paths: [.github/workflows/issue-15-native.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    runs-on: macos-15
+    timeout-minutes: 12
+    env:
+      WORK: ${{ runner.temp }}/repotend-15-native
+    steps:
+      - name: Initialize private evidence directory
+        run: |
+          umask 077
+          mkdir -p "$WORK/records"
+          sw_vers > "$WORK/records/macos.txt"
+          uname -a > "$WORK/records/uname.txt"
+      - name: Check out evidence at this workflow revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: evidence
+          persist-credentials: false
+      - name: Check out frozen RepoTend implementation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: source
+          ref: ead77fde6a5a7ba33e54cc81deb76fced8dbc333
+          persist-credentials: false
+      - name: Check out exact Proofline runtime
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: grove/proofline
+          ref: 8e117fff4de2459637fe7f74f47ab17fc3341d84
+          path: tool
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+        with:
+          python-version: '3.12'
+      - name: Pinned supported Node runtime
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: '22.16.0'
+      - name: Install exactly Codex CLI 0.162.1
+        run: |
+          set -euo pipefail
+          npm install -g @openai/codex@0.162.1 --ignore-scripts --no-audit --no-fund 2>&1 | tee "$WORK/records/codex-install.txt"
+          codex --version | tee "$WORK/records/codex-wrapper-version.txt"
+          test "$(codex --version)" = "codex-cli 0.162.1"
+      - name: Use installed native Codex binary instead of the Node wrapper
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$(uname -m)" in
+            arm64) triple=aarch64-apple-darwin ;;
+            x86_64) triple=x86_64-apple-darwin ;;
+            *) echo "Unsupported macOS architecture"; exit 1 ;;
+          esac
+          # Same native setup as foundryline's successful 951bf4b probe.
+          module_root="$(npm root -g)"
+          native="$(find "$module_root/@openai" -type f \
+            -path "*/vendor/$triple/bin/codex" -print -quit)"
+          test -n "$native"
+          test -x "$native"
+          mkdir -p "$RUNNER_TEMP/native-codex-bin"
+          ln -s "$native" "$RUNNER_TEMP/native-codex-bin/codex"
+          echo "$RUNNER_TEMP/native-codex-bin" >> "$GITHUB_PATH"
+          echo "$native" > "$WORK/records/codex-native-path.txt"
+          "$native" --version | tee "$WORK/records/codex-native-version.txt"
+          test "$("$native" --version)" = "codex-cli 0.162.1"
+      - name: Verify original inputs and execute native scenarios
+        shell: bash
+        env:
+          SRC: ${{ github.workspace }}/source
+          TOOL: ${{ github.workspace }}/tool
+          EVIDENCE: ${{ github.workspace }}/evidence/docs/evidence/issue-15
+        run: |
+          set -euo pipefail
+          umask 077
+          python3 -B - <<'PYRUN'
+          import hashlib, json, os, platform, shutil, subprocess, sys, tarfile, time
+          from pathlib import Path, PurePosixPath
+
+          root = Path(os.environ['WORK']) / 'records'
+          src, tool, evidence = (Path(os.environ[k]) for k in ('SRC', 'TOOL', 'EVIDENCE'))
+          def save(name, value):
+              (root / name).write_text(json.dumps(value, indent=2) + '\n')
+          def sha(path):
+              return hashlib.sha256(path.read_bytes()).hexdigest()
+          def git(ref):
+              return subprocess.check_output(['git', '-C', str(src), 'rev-parse', ref], text=True).strip()
+          def clean():
+              assert not subprocess.check_output(['git', '-C', str(src), 'status', '--porcelain'])
+          def invoke(name, argv, timeout):
+              save(name + '-invocation.json', {'argv': argv, 'cwd': str(tool)})
+              start = time.monotonic()
+              try:
+                  p = subprocess.run(argv, cwd=tool, capture_output=True, timeout=timeout)
+              except subprocess.TimeoutExpired as error:
+                  (root / (name + '.stdout')).write_bytes(error.stdout or b'')
+                  (root / (name + '.stderr')).write_bytes(error.stderr or b'')
+                  save(name + '-outcome.json', {'timeout': True, 'elapsed_seconds': time.monotonic() - start})
+                  raise
+              (root / (name + '.stdout')).write_bytes(p.stdout)
+              (root / (name + '.stderr')).write_bytes(p.stderr)
+              save(name + '-outcome.json', {'exit_status': p.returncode, 'elapsed_seconds': time.monotonic() - start})
+              print(name, p.returncode, p.stdout.decode(errors='replace'), p.stderr.decode(errors='replace'), flush=True)
+              return p
+
+          assert git('HEAD') == 'ead77fde6a5a7ba33e54cc81deb76fced8dbc333'
+          tree = '544421686de4112ca1ac8bfb118cde750821e3ef'
+          assert git('HEAD^{tree}') == tree
+          clean()
+          proofline = subprocess.check_output(['git', '-C', str(tool), 'rev-parse', 'HEAD'], text=True).strip()
+          assert proofline == '8e117fff4de2459637fe7f74f47ab17fc3341d84'
+          manifest = json.loads((evidence / 'manifest.json').read_bytes())
+          archive = evidence / manifest['archive']
+          assert sha(archive) == manifest['archive_sha256']
+          shutil.copy2(evidence / 'manifest.json', root / 'original-manifest.json')
+          original = root / 'original'
+          original.mkdir(mode=0o700)
+          seen = set()
+          with tarfile.open(archive) as tar:
+              for member in tar.getmembers():
+                  path = PurePosixPath(member.name)
+                  assert not path.is_absolute() and '..' not in path.parts
+                  if member.isdir():
+                      continue
+                  assert member.isfile() and member.name in manifest['files'], member.name
+                  assert hashlib.sha256(tar.extractfile(member).read()).hexdigest() == manifest['files'][member.name], member.name
+                  seen.add(member.name)
+              assert seen == set(manifest['files'])
+              tar.extractall(original, filter='data')
+          export = original / 'export'
+          before = {p.name: sha(p) for p in export.iterdir()}
+          assert before['source-S1.txt'] == 'e1d61d83be03e8c442d05d1953bd2de47cd3a5a17a755c87d81826c56cb163f8'
+          python = str(Path(sys.executable).resolve())
+          node = str(Path(shutil.which('node')).resolve())
+          node_version = subprocess.check_output([node, '--version'], text=True).strip()
+          assert node_version == 'v22.16.0'
+          assert sys.version_info[:2] == (3, 12)
+          save('identity.json', {
+              'host': platform.platform(), 'machine': platform.machine(), 'python': sys.version,
+              'python_path': python, 'node': node, 'node_version': node_version,
+              'codex': subprocess.check_output(['codex', '--version'], text=True).strip(),
+              'codex_native': str(Path(shutil.which('codex')).resolve()),
+              'codex_sha256': sha(Path(shutil.which('codex')).resolve()),
+              'run_id': os.environ['GITHUB_RUN_ID'], 'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
+              'workflow_revision': os.environ['GITHUB_SHA'], 'event': os.environ['GITHUB_EVENT_NAME'],
+              'implementation_commit': git('HEAD'), 'implementation_tree': tree, 'proofline_commit': proofline,
+              'archive_sha256': sha(archive), 'manifest_sha256': sha(evidence / 'manifest.json'),
+              'source_sha256': before['source-S1.txt'], 'export_hashes': before,
+              'coverage_completeness': 'UNKNOWN', 'model_calls': 0})
+          r1 = [node, '--test', '--test-name-pattern=^R1', 'test/audit-cli.test.mjs']
+          r2 = [node, '--test', '--test-name-pattern=^R2', 'test/audit-cli.test.mjs']
+          scenarios = [
+              ('invalid-map', [r1], {'R1': [{'index': 0, 'argv': r2}]}),
+              ('r1-only', [r1], {'R1': [{'index': 0, 'argv': r1}]}),
+              ('r1-r2', [r1, r2], {'R1': [{'index': 0, 'argv': r1}], 'R2': [{'index': 1, 'argv': r2}]})]
+          for name, checks, links in scenarios:
+              save(name + '-checks.json', checks)
+              save(name + '-links.json', links)
+          try:
+              for name, checks, links in scenarios:
+                  clean()
+                  cmd = [python, '-B', str(tool / 'proofline.py'), 'check', '--repo', str(src),
+                         '--source', str(export / 'source-S1.txt'), '--intentline-export', str(export),
+                         '--checks', str(root / (name + '-checks.json')),
+                         '--intentline-links', str(root / (name + '-links.json')),
+                         '--seconds', '200', '--check-seconds', '40', '--output', str(root / (name + '-record'))]
+                  p = invoke(name, cmd, 240)
+                  if name == 'invalid-map':
+                      assert p.returncode == 1
+                      assert b'Intentline R check index/argv differs from the selected command' in p.stderr
+                      assert not (root / (name + '-record')).exists()
+                      continue
+                  report_path = root / (name + '-record/report.json')
+                  report = json.loads(report_path.read_bytes())
+                  invoke(name + '-status', [python, '-B', str(tool / 'proofline.py'), 'status', str(report_path), '--show-source'], 60)
+                  assert report['candidate_tree'] == tree
+                  assert report['model_dispatches'] == 0
+                  assert report['promise_evidence']['coverage_completeness'] == 'UNKNOWN'
+                  rows = {r['id']: r['status'] for r in report['promise_evidence']['requirements']}
+                  if name == 'r1-only':
+                      assert rows['R2'] == 'NOT DEMONSTRATED'
+                  if report['status'] == 'EXECUTION UNAVAILABLE':
+                      save('execution-unavailable.json', {'scenario': name, 'status': report['status'], 'error': report.get('error'), 'remaining_scenarios': 'stopped; no boundary bypass'})
+                      raise RuntimeError('EXECUTION UNAVAILABLE: stopping native experiment')
+                  assert report['status'] == 'CHECKS PASSED', report['status']
+                  assert report['boundary']['assessment']['status'] == 'OBSERVED'
+                  assert p.returncode == 0
+                  assert len(report['observations']) == len(checks)
+                  assert all(o['status'] == 'PASSED' and o['argv'] == argv for o, argv in zip(report['observations'], checks))
+          finally:
+              after = {p.name: sha(p) for p in export.iterdir()}
+              save('export-integrity-after.json', after)
+              assert before == after
+              clean()
+          PYRUN
+      - name: Package raw records even after failure
+        if: always()
+        run: |
+          python3 -B - <<'PY'
+          import hashlib, json, os, tarfile
+          from pathlib import Path
+          work = Path(os.environ['WORK'])
+          root = work / 'records'
+          inventory = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
+                       for p in sorted(root.rglob('*')) if p.is_file()}
+          (root / 'runner-manifest.json').write_text(json.dumps(inventory, indent=2) + '\n')
+          archive = work / 'raw-records.tar.gz'
+          with tarfile.open(archive, 'w:gz') as tar:
+              tar.add(root, arcname='records')
+          (work / 'SHA256SUMS').write_text(hashlib.sha256(archive.read_bytes()).hexdigest() + '  raw-records.tar.gz\n')
+          PY
+      - name: Upload short-lived raw evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: repotend-15-native-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/repotend-15-native/raw-records.tar.gz
+            ${{ runner.temp }}/repotend-15-native/SHA256SUMS
+          retention-days: 7
+          if-no-files-found: error
