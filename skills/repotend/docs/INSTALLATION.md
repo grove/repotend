@@ -2,44 +2,31 @@
 
 RepoTend is an Agent Skill with a read-only repository auditor. The [Skills CLI](https://github.com/vercel-labs/skills) discovers its `skills/repotend/SKILL.md` and copies this directory to the selected agent's skill location.
 
-## Install
-
-From your terminal:
+## Install in one command
 
 ```sh
 npx skills@latest add grove/repotend
 ```
 
-Choose an agent and install scope. The command copies the skill, scripts, pinned dependency manifest, lockfile, and reference docs. **It does not install npm dependencies or validate that the audit runs.** Node.js 22.16+ and npm are required for the next step. macOS/Linux are the documented environments; on Windows use WSL.
-
-## Prepare the installed skill once
-
-Find the **installed** `repotend/SKILL.md` directory in the location selected by the Skills CLI. Run these commands **in that installed skill directory**, not in the repository being audited:
-
-```sh
-cd "/absolute/path/to/installed/repotend"
-npm ci --omit=dev --ignore-scripts --no-audit --no-fund
-```
-
-This downloads the pinned YAML parser (v2.8.1) from npm into the installed skill's `node_modules`. It does not run target-project code or dependencies. With an AI agent, approve this setup as a **separate install action**, then ask the agent to audit; do not silently run npm as part of the audit.
+Choose an agent and installation scope. The copied skill already includes its scripts, documentation, and the YAML v2.8.1 parser source (ISC license under `vendor/yaml/LICENSE`). **There is no `npm ci` step.** Node.js 22.16+ is required to run RepoTend. macOS/Linux are documented; Windows users should use WSL.
 
 ## Audit a project
 
-From any directory, run the installed script and pass the target repository's absolute path:
+Find the installed `repotend/SKILL.md` directory printed by the Skills CLI. From any directory, run:
 
 ```sh
-node "/absolute/path/to/installed/repotend/scripts/audit.mjs" \\
+node "/absolute/path/to/installed/repotend/scripts/audit.mjs" \
   --root "/absolute/path/to/your-project" --format json
 ```
 
-Alternatively, ask the agent: "Audit this repository with RepoTend. Explain verified findings separately from heuristic recommendations. Do not change files."
+Or ask your agent: "Audit this repository with RepoTend. Explain verified findings separately from heuristic recommendations. Do not change files."
 
-The audit and remediation preview are read-only. A missing dependency or failed audit must be reported as a setup/error condition (exit 2), **not** as an empty or successful report. Applying either supported new-file remediation requires human approval of the full preview, exact plan ID, and target root.
+The audit and remediation preview are read-only. A failed audit must be reported as an execution error, **not** a clean report. Applying either supported new-file remediation requires human approval of the full preview, exact plan ID, and target root.
 
-## Other installation and validation notes
+## Notes and boundaries
 
-- A separate, [tested Copilot CLI installer](https://github.com/grove/repotend/blob/main/docs/INSTALLATION.md) copies and prepares the runtime automatically.
-- The copied skill works without the original checkout **after** installing its own pinned dependency.
-- The Skills CLI installation and discovery behavior for other agents has **not been validated live**. Test the selected agent's discovery and shell permission behavior before relying on it.
-- Audits do not require GitHub credentials or an LLM. AI agents may send repository content to their configured model provider; consider repository privacy first.
+- The skill is self-contained, with no runtime npm dependencies. A copied skill works without the original checkout or access to the npm registry.
+- A separate [Copilot CLI installer](https://github.com/grove/repotend/blob/main/docs/INSTALLATION.md) remains available for existing workflows.
+- Skills CLI discovery and agent approval behavior outside Copilot CLI have **not been validated live**.
+- Audits do not require GitHub credentials or an AI model. AI agents may share repository contents with their model providers; review privacy settings.
 - See [workflow checks](WORKFLOW_CHECKS.md), [configuration](CONFIGURATION.md), and [remediation safety](REMEDIATION.md).
