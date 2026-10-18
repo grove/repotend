@@ -10,8 +10,9 @@ npm ci --omit=dev --ignore-scripts --no-audit --no-fund
 
 The skill includes its own pinned package manifest, lockfile, scripts and reference documentation. Do not copy only `SKILL.md`. The audit requires Node.js 22.16+ and the pinned `yaml` parser to be present in the installed skill's `node_modules`. Skill discovery and path conventions vary by agent; actual use outside Copilot CLI is not yet live-validated. Request the audit by skill name only after confirming setup. Never install or execute the target repository's dependencies as part of RepoTend.
 
+## GitHub Copilot CLI installer (live validated)
 
-RepoTend provides a **copied, self-contained skill installation** built from a source checkout. It includes the validator, documentation, license, and pinned runtime dependency. No absolute symlinks, global npm package, or target-project dependency setup are needed. The source checkout can be removed after installation.
+RepoTend also provides a **copied, self-contained skill installation** built from a source checkout. It includes the validator, documentation, license, and pinned runtime dependency. No absolute symlinks, global npm package, or target-project dependency setup are needed. The source checkout can be removed after installation.
 
 ## Requirements and boundaries
 
