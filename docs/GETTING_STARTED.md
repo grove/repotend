@@ -1,8 +1,10 @@
 # Your first RepoTend check
 
-Want to see what RepoTend thinks of a project? This walkthrough starts by checking RepoTend itself, then shows you how to check your own repository.
+Want to see what RepoTend thinks of a project? This is the **manual, no-agent installation** walkthrough: it starts by checking RepoTend itself, then shows you how to check your own repository.
 
-You won't need to sign in to GitHub or connect an AI assistant. **Nothing in your project will be changed.**
+**Using a coding assistant instead?** The simpler, alternative setup is `npx skills@latest add grove/repotend`. You do **not** need to clone RepoTend or run `npm ci` if you've installed the skill that way. See the [README's copy-paste prompts](../README.md#use-repotend-in-your-ai-assistant) or [agent installation guide](INSTALLATION.md).
+
+You won't need to sign in to GitHub or connect an AI assistant for this manual method. **Nothing in your project will be changed.**
 
 ## Before you start
 
