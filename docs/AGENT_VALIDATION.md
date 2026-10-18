@@ -165,6 +165,39 @@ Using a new disposable repository and a fresh installation, repeat the discovery
 
 Separately remove the installed YAML dependency (or corrupt an engine file) in a disposable installation, ask for an audit, and confirm a failed tool invocation is reported as a setup failure without invented statuses. Restore setup through a fresh install, not npm in the target repository. Record redacted observations here; do not upload tokens, host credential/config files, or private repository contents.
 
+## Reporting acceptance examples
+
+These synthetic examples specify the expected agent presentation for issue #20. They are review scenarios, not observed live responses or additional validator statuses. Use the current invocation's exit status, JSON findings, and errors; the JSON contract and validator output remain unchanged.
+
+### Completed advisory audit
+
+Input: exit 0, `errors: []`, 13 findings (4 PASS, 9 WARN), all `enforced: false`.
+
+> Audited 13 checks: 4 PASS, 9 advisory WARN; no enforced failures. No files were changed.
+
+The last sentence assumes read-only execution and an observed unchanged target. Follow the headline with the highest-impact decisions, then details separating verified findings from heuristic concerns. Retain rule IDs, evidence, and limitations. A compact status breakdown can show all six counts: PASS 4, WARN 9, FAIL 0, SUPPRESSED 0, UNKNOWN 0, NOT_APPLICABLE 0. None of the nine warnings is an enforced failure, and the counts are not a repository health score.
+
+### Completed audit with uncommon statuses
+
+Input: exit 1, `errors: []`, 13 findings (6 PASS, 2 WARN, 1 FAIL, 1 SUPPRESSED, 1 UNKNOWN, 2 NOT_APPLICABLE). The FAIL is explicitly enforced; the active suppression also has `enforced: true`, reason `Shared organization PR template`, and expiry `2027-01-31`.
+
+> Audited 13 checks: 2 advisory WARN, 1 enforced FAIL; review the failure first.
+
+Details must retain PASS 6, WARN 2, FAIL 1, SUPPRESSED 1, UNKNOWN 1, NOT_APPLICABLE 2, with confidence and evidence for each finding. Explain the enforced failure and the unknown check's limitation. Quote the suppression's reason and expiry and identify it as an active exception, not compliance; the two non-applicable checks were not passes. The total includes every reported finding, while active WARN/FAIL counts exclude the suppression. If that exception expires, use its current reported WARN or FAIL status and explain the expired exception rather than continuing to subtract it. Audit completion does not establish overall repository health or security.
+
+Also review an exit-0 variant with 7 PASS, 2 WARN, 0 FAIL, 1 SUPPRESSED, 1 UNKNOWN, and 2 NOT_APPLICABLE. Its headline is **Audited 13 checks: 2 advisory WARN; no enforced failures.** Details still disclose the unknown and non-applicable results and the enforced suppression. Likewise, with 13 PASS and an enforced passing rule, say **Audited 13 checks: 13 PASS, 0 WARN; no enforced failures.** Explain enabled enforcement in the details; neither exit 0 nor zero FAIL means no rules were enforced.
+
+### Incomplete or failed invocation
+
+| Current invocation | Expected opening and required details |
+| --- | --- |
+| Exit 2; invalid configuration; no JSON | **Audit failed: configuration error.** Include the observed diagnostic; no check totals are available. Do not reuse earlier results. |
+| Exit 2; valid JSON with 12 PASS, 1 UNKNOWN and a `RULE_EXECUTION` error | **Audit incomplete: a rule could not execute.** Include the error's code, rule ID, and message, and label all counts/findings as partial. Never call the run successful because most findings passed. |
+| Exit 0 or 1; missing or malformed JSON | **Audit incomplete: no usable JSON report was returned.** Explain the missing output or parse failure without inventing counts. The exit status alone cannot establish a completed audit. |
+| Any exit status; valid JSON with nonempty `errors` | **Audit incomplete: the report contains audit errors.** Preserve every error and label any available findings as partial, even if there are no FAIL findings. |
+
+For an execution failure without a report (for example, a missing runtime or parser), report the observed setup failure and stop. Do not install dependencies, repair the target, or describe it as safe. These examples can be replayed in an opt-in host exercise; no live validation of the revised headline wording is claimed here.
+
 ## Limits
 
 This is an opt-in manual integration exercise, not a guarantee of agent behavior. Script-level digest checks cannot prove human consent; this run obtained actual human approval and relayed it into Copilot. Personal-location discovery, cloud/workspace portability, Windows outside WSL, other host versions, and live workflow-heuristic explanations remain unverified. The agent's shorthand Git-status description and informal setup-repair suggestion required the independent checks and documented recovery above. No merge or release is authorized by this validation record.
