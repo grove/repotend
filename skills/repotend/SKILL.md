@@ -11,7 +11,7 @@ Use this skill for repository health audits, lightweight open-source conventions
 
 Identify the target repository root and this loaded skill's absolute directory. Use scripts beside this `SKILL.md`, regardless of the current working directory. Quote all paths. Never substitute a target project's scripts for these entrypoints.
 
-Node.js 22.16+ is required. An installed skill contains its own `package.json`, lockfile, `node_modules/yaml`, and `docs/`. In a source checkout, dependencies and `docs/` are at the RepoTend repository root. Read the installation guide there if setup is missing. **Stop and report setup failures**; do not invent findings, silently repair the installation, or run npm in the audited repository. Installation is a separate maintainer action.
+Node.js 22.16+ is required. An installed skill has its own `package.json`, `package-lock.json`, and `docs/`; the pinned `yaml` dependency must also be installed **inside the skill directory**, never in the target repository. A Copilot installation created by `scripts/install-skill.mjs` already includes this dependency. An installation copied by `npx skills@latest add grove/repotend` does **not** run npm automatically; before the first audit, the maintainer must explicitly run `npm ci --omit=dev --ignore-scripts --no-audit --no-fund` from the installed skill directory. Ask for approval before invoking npm; treat this as a separate setup action, not an audit. In a source checkout the root package supplies dependencies. Read `docs/INSTALLATION.md` in the source repository for details. **Stop and report setup failures**; do not invent findings, silently repair installation, or run npm in the audited repository.
 
 ## Audit and explain
 
