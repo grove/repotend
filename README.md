@@ -30,19 +30,13 @@ These are *examples*, not results from your project. RepoTend won't insist you f
 
 ## Install with the Skills CLI (experimental)
 
-You can discover and copy RepoTend into supported coding agents with:
+Install RepoTend as an Agent Skill in supported coding assistants with one command:
 
 ```sh
 npx skills@latest add grove/repotend
 ```
 
-The Skills CLI copies the skill but **does not install its Node.js runtime dependencies**. Before the first audit, find the installed `repotend` skill directory (the destination is chosen by the CLI/agent), and **from that skill directory only** run:
-
-```sh
-npm ci --omit=dev --ignore-scripts --no-audit --no-fund
-```
-
-Requires Node.js 22.16+ and npm. This installs the pinned YAML parser in the **skill directory**, not in the project being audited. Ask the agent to audit your repository with RepoTend after setup; the audit itself remains read-only. Keep the installed skill and its `node_modules` together. See [installation options](docs/INSTALLATION.md) for the Copilot installer, manual use, and safety notes.
+**No second setup command is required.** The `yaml` v2.8.1 parser is bundled with the skill, so the copied skill works with Node.js 22.16+ without `npm ci`, installing dependencies in your project, or downloading anything during an audit. Ask your agent to audit your repository using RepoTend. See [installation options](docs/INSTALLATION.md) for manual use, privacy, and limitations.
 
 ## Give it a try
 
