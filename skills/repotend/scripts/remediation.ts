@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { constants } from 'node:fs';
 import { lstat, mkdir, open, realpath, rmdir } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { RepositoryReader, runAudit, type Finding, type Report } from './engine.ts';
 
 /** Only explicitly registered, fixed-content files may be created. */
@@ -166,7 +167,9 @@ export async function applyRemediation(repositoryRoot: string, reviewedPlanId: s
   return { schemaVersion: '0.1', mode: 'apply', planId: plan.planId, changed, verified };
 }
 
-export function renderRemediationMarkdown(result: FixPlan | FixOutcome): string {
+function shellQuote(value: string): string { return "'" + value.replaceAll("'", "'\\''") + "'"; }
+
+export function renderRemediationMarkdown(result: FixPlan | FixOutcome, repositoryRoot: string): string {
   if (result.mode === 'apply') {
     return ['## RepoTend remediation results', '',
       `Created ${result.changed.length} file(s).`, '',
@@ -180,7 +183,9 @@ export function renderRemediationMarkdown(result: FixPlan | FixOutcome): string 
     ...result.proposals.flatMap((item) => [`### ${item.path}`, '', item.reason, '', '```diff', item.diff.trimEnd(), '```', '']),
     ...(result.proposals.length ? [
       'To apply exactly this reviewed plan, run:', '',
-      `\`node skills/repotend/scripts/remediate.mjs --apply ${result.planId}\``, '',
+      '```sh',
+      `node ${shellQuote(fileURLToPath(new URL('./remediate.mjs', import.meta.url)))} --root ${shellQuote(resolve(repositoryRoot))} --apply ${result.planId}`,
+      '```', '',
       'This command requires explicit approval and rechecks repository state before writing.', '',
     ] : []),
   ].join('\n');

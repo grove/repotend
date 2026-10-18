@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, readFile, lstat, rm, readdir, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, dirname, join, relative } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import { runAudit } from '../skills/repotend/scripts/engine.ts';
@@ -28,7 +28,7 @@ test('dry-run proposes two deterministic additions without creating files or dir
   assert.equal(plan.proposals[0].diff.startsWith('--- /dev/null\n+++ b/.github/pull_request_template.md'), true);
   assert.match(plan.proposals[1].content, /insert_final_newline = true/);
   assert.doesNotMatch(plan.proposals[1].content, /indent_style|indent_size/);
-  assert.match(renderRemediationMarkdown(plan), /No files were changed/);
+  assert.match(renderRemediationMarkdown(plan, root), /No files were changed/);
   assert.deepEqual(await planRemediation(root), plan);
 });
 
@@ -149,4 +149,39 @@ test('CLI rejects unknown arguments and malformed options without writing', asyn
   const failed = spawnSync(process.execPath, [cli, '--root', root, '--format', 'xml'], { encoding: 'utf8' });
   assert.equal(failed.status, 2);
   assert.deepEqual(await readdir(root), []);
+});
+
+test('Markdown apply command keeps the selected root when run from another directory', async (t) => {
+  const fixtureRoot = await fixture(t);
+  const root = join(fixtureRoot, "selected repo's `name` $(touch UNEXPECTED)");
+  const caller = join(fixtureRoot, 'caller');
+  await mkdir(root);
+  await mkdir(caller);
+  const cli = join(process.cwd(), 'skills/repotend/scripts/remediate.mjs');
+  const plan = await planRemediation(root);
+  assert.equal((await planRemediation(caller)).planId, plan.planId);
+  for (const { args, cwd } of [
+    { args: ['--root', root], cwd: caller },
+    { args: ['--root', relative(caller, root)], cwd: caller },
+    { args: [], cwd: root },
+  ]) {
+    const preview = spawnSync(process.execPath, [cli, ...args], { cwd, encoding: 'utf8' });
+    assert.equal(preview.status, 0, preview.stderr);
+    assert.deepEqual(await readdir(root), []);
+    assert.deepEqual(await readdir(caller), []);
+    const command = preview.stdout.match(/```sh\n([^\n]+)\n```/)[1];
+    // Execute the displayed instructions verbatim, with Node available to the shell.
+    const applied = spawnSync('/bin/sh', ['-c', command], {
+      cwd: fixtureRoot, encoding: 'utf8',
+      env: { ...process.env, PATH: `${dirname(process.execPath)}:${process.env.PATH}` },
+    });
+    assert.equal(applied.status, 0, applied.stderr);
+    for (const proposal of plan.proposals) {
+      assert.equal(await readFile(join(root, proposal.path), 'utf8'), proposal.content);
+    }
+    assert.deepEqual(await readdir(caller), []);
+    assert.deepEqual(await readdir(fixtureRoot), [basename(caller), basename(root)].sort());
+    await rm(join(root, '.github'), { recursive: true });
+    await rm(join(root, '.editorconfig'));
+  }
 });

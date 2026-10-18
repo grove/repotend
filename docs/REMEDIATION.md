@@ -24,6 +24,8 @@ By default RepoTend only reads repository files and prints a unified diff for **
 
 Review the entire preview before deciding whether to apply it. A missing repository-local template may intentionally be inherited from an organization; RepoTend does not verify organization defaults. It is fine to decline a suggestion.
 
+The Markdown preview includes a command for POSIX shells with quoted absolute paths to the trusted tool and selected `--root`, so changing the working directory does not change its target. The plan ID checks proposed content only; identical proposals in different repositories can share an ID. Always retain the selected root when applying a reviewed plan.
+
 ## Apply only the reviewed plan
 
 After checking the proposed diff and explicitly approving it, supply the **full plan ID** from the preview:

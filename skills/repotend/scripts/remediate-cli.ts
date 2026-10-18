@@ -14,7 +14,7 @@ async function main(): Promise<void> {
     else throw new Error(`Unknown or incomplete option: ${option}`);
   }
   const result = apply ? await applyRemediation(root, apply) : await planRemediation(root);
-  process.stdout.write(format === 'json' ? JSON.stringify(result, null, 2) + '\n' : renderRemediationMarkdown(result));
+  process.stdout.write(format === 'json' ? JSON.stringify(result, null, 2) + '\n' : renderRemediationMarkdown(result, root));
 }
 main().catch((error: unknown) => {
   process.stderr.write(`RepoTend remediation failed: ${error instanceof Error ? error.message : 'unknown error'}\n`);
