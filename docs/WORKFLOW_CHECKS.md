@@ -21,7 +21,7 @@ After the local audit, maintainers may explicitly opt in to [separate read-only 
 
 ## Why not automatically fix CI?
 
-Skipping unnecessary jobs safely may require dependency graphs, default-branch rulesets, monorepo semantics, and real execution data. A generated path filter might accidentally leave required checks pending or skip affected builds. RepoTend only *recommends* such changes; it does not rewrite workflow triggers, token permissions, or action versions. For maintainers who separately approve a proposed workflow change and have access to original Actions evidence, the [manual CI impact evaluation](CI_IMPACT_EVALUATION.md) and [worksheet](CI_IMPACT_WORKSHEET.md) document a bounded before/after study, including an honest insufficient-data outcome.
+Skipping unnecessary jobs safely may require dependency graphs, default-branch rulesets, monorepo semantics, and real execution data. A generated path filter might accidentally leave required checks pending or skip affected builds. RepoTend only *recommends* such changes; it does not rewrite workflow triggers, token permissions, or action versions.
 
 ## Worked example: prioritize decisions
 
