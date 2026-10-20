@@ -122,7 +122,7 @@ RepoTend currently has **13 small checks** covering:
 - **Security-related clues:** workflow permissions and whether third-party actions are pinned to a specific version of their code.
 - **Everyday development:** whether the project has an `.editorconfig` file for shared editor settings.
 
-The default audit only looks at local files and workflows. It can't measure actual CI savings, find bugs in your source code, or tell you that a project is secure. See [exactly what each check does](docs/RULE_CATALOG.md). After an audit, maintainers can explicitly opt in to [separate read-only GitHub required-check context](docs/GITHUB_VERIFICATION.md) using an existing authorized `gh` connection. This optional step preserves local warnings and reports inaccessible settings as unknown.
+The default audit only looks at local files and workflows. It can't measure actual CI savings, find bugs in your source code, or tell you that a project is secure. See [exactly what each check does](docs/RULE_CATALOG.md). For a separately approved change, use the [opt-in manual GitHub Actions impact evaluation](docs/CI_IMPACT_EVALUATION.md) and its [before/after worksheet](docs/CI_IMPACT_WORKSHEET.md); no measured savings are claimed without original run data. After an audit, maintainers can explicitly opt in to [separate read-only GitHub required-check context](docs/GITHUB_VERIFICATION.md) using an existing authorized `gh` connection. This optional step preserves local warnings and reports inaccessible settings as unknown.
 
 ## What if I want to act on a suggestion?
 
